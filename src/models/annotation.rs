@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ClassRepresentation<S>
 where
     S: Into<String>,
@@ -9,7 +9,7 @@ where
     Both(S, S),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Annotation {
     pub class: ClassRepresentation<String>,
     pub source_file: String,

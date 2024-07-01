@@ -1,15 +1,12 @@
-use annotation_example::*;
+use annotation_example::{*, models::annotation::Annotation};
 
-pub fn test_annotation (parser: &impl parser::FormatParser, expected: Vec<Annotation>) {
+pub fn test_annotation (parser: &mut impl parser::FormatParser, expected: Vec<Annotation>) {
     let mut annotations = Vec::new();
-
     while parser.has_next() {
-        let annotation = parser.get_next();
-        if let Err(e) = annotation {
-            panic!("Failed to parse annotation: {e}");
+        match parser.get_next() {
+            Ok(annotation) => annotations.push(annotation),
+            Err(e) => panic!("Failed to parse annotation: {e}"),
         }
-        annotations.push(annotation);
     }
-
-    assert_eq!(annotation, expected);
+    assert_eq!(annotations, expected);
 }
