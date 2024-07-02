@@ -22,8 +22,10 @@ pub struct Yolo5ObbParser {
 impl Yolo5ObbParser {
     pub fn new() -> Yolo5ObbParser {
         Self {
-            source_directory: None, file_enumerator: None,
-            current_entry: None, current_reader: None
+            source_directory: None,
+            file_enumerator: None,
+            current_entry: None,
+            current_reader: None,
         }
     }
 
@@ -32,15 +34,22 @@ impl Yolo5ObbParser {
         let enumerator: &mut ReadDir = self.file_enumerator.as_mut().unwrap();
         while let Some(next_entry) = enumerator.next() {
             let next_entry = next_entry?;
-            if next_entry.file_name().into_string().unwrap().ends_with(".txt") {
+            if next_entry
+                .file_name()
+                .into_string()
+                .unwrap()
+                .ends_with(".txt")
+            {
                 entry = Some(next_entry);
                 break;
             }
         }
-        entry.ok_or(anyhow!(ParserError::WrongFormat(format!("Unable to find text file"))))
+        entry.ok_or(anyhow!(ParserError::WrongFormat(format!(
+            "Unable to find text file"
+        ))))
     }
 
-    fn reader_has_data (&mut self) -> bool{
+    fn reader_has_data(&mut self) -> bool {
         let reader = self.current_reader.as_mut();
 
         if let Some(reader) = reader {
@@ -60,10 +69,9 @@ impl FormatParser for Yolo5ObbParser {
             return Err(anyhow::anyhow!("Expected given path to be a directory"));
         }
 
-        
         let enumerator = std::fs::read_dir(&path)?;
         self.file_enumerator = Some(enumerator);
-        
+
         self.source_directory = Some(path);
         Ok(())
     }
@@ -97,7 +105,8 @@ impl FormatParser for Yolo5ObbParser {
         }
 
         let source_file = self
-            .current_entry.as_ref()
+            .current_entry
+            .as_ref()
             .unwrap()
             .file_name()
             .to_string_lossy()
@@ -117,7 +126,7 @@ impl FormatParser for Yolo5ObbParser {
             difficulty: match elements.get(9) {
                 Some(i) => i.parse::<i32>().unwrap() != 0,
                 None => false,
-            }
+            },
         })
     }
 
@@ -144,8 +153,8 @@ impl FormatParser for Yolo5ObbParser {
             Ok(file) => file,
             Err(e) => {
                 eprintln!("{e}");
-                return false
-            },
+                return false;
+            }
         };
         self.current_reader = Some(BufReader::new(text_file));
         return true;
