@@ -1,6 +1,5 @@
-use labelswitch_data::models::{annotation::ClassRepresentation::*, Annotation};
-use labelswitch_data::parser::*;
-use labelswitch_data::*;
+use labelswap_data::models::{annotation::ClassRepresentation::*, Annotation};
+use labelswap_data::parser::*;
 use std::path::Path;
 
 mod common_parser;

@@ -1,4 +1,4 @@
-use labelswitch_data::{models::annotation::Annotation, *};
+use labelswap_data::{models::annotation::Annotation, *};
 
 pub fn test_annotation(parser: &mut impl parser::FormatParser, expected: Vec<Annotation>) {
     let mut annotations = Vec::new();
