@@ -1,7 +1,7 @@
-use annotation_example::*;
+use labelswitch_data::*;
 use std::path::Path;
-use annotation_example::models::{Annotation, annotation::ClassRepresentation::*};
-use annotation_example::parser::*;
+use labelswitch_data::models::{Annotation, annotation::ClassRepresentation::*};
+use labelswitch_data::parser::*;
 
 mod common_parser;
 
