@@ -26,7 +26,7 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
-    #[template(resource = "/io/github/diegoivan/label_swap/window.ui")]
+    #[template(resource = "/io/github/diegoivan/label_swap/ui/window.ui")]
     pub struct LabelSwapWindow {
         // Template widgets
         #[template_child]

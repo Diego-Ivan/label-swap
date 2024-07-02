@@ -1,11 +1,23 @@
 pkgdatadir = get_option('prefix') / get_option('datadir') / meson.project_name()
 gnome = import('gnome')
 
+blueprints = files (
+  'ui/window.blp',
+)
+
+blueprint_compiler = find_program('blueprint-compiler')
+
 gnome.compile_resources('label-swap',
   'label-swap.gresource.xml',
   gresource_bundle: true,
   install: true,
   install_dir: pkgdatadir,
+  dependencies: custom_target(
+    build_always_stale: true,
+    command: [blueprint_compiler, 'batch-compile', '@OUTPUT@', '@CURRENT_SOURCE_DIR@', '@INPUT@'],
+    input: blueprints,
+    output: '.',
+  ),
 )
 
 conf = configuration_data()
