@@ -3,7 +3,7 @@ use anyhow::Result;
 use std::path::Path;
 
 pub trait FormatParser {
-    fn init(&mut self, path: &Path) -> Result<()>;
+    fn init(&mut self, path: Box<Path>) -> Result<()>;
     fn get_next(&mut self) -> anyhow::Result<Annotation>;
     fn has_next(&mut self) -> bool;
 }

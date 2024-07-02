@@ -1,7 +1,7 @@
 #[derive(Debug, PartialEq)]
 pub enum ClassRepresentation<S>
 where
-    S: Into<String>,
+    S: Into<String> + PartialEq<String>,
 {
     None,
     ClassName(S),

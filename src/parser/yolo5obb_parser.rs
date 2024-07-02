@@ -54,15 +54,17 @@ impl Yolo5ObbParser {
 }
 
 impl FormatParser for Yolo5ObbParser {
-    fn init(&mut self, path: &Path) -> Result<()> {
+    fn init(&mut self, path: Box<Path>) -> Result<()> {
         let metadata = std::fs::metadata(&path)?;
-        if metadata.is_dir() {
+        if !metadata.is_dir() {
             return Err(anyhow::anyhow!("Expected given path to be a directory"));
         }
 
+        
         let enumerator = std::fs::read_dir(&path)?;
         self.file_enumerator = Some(enumerator);
-
+        
+        self.source_directory = Some(path);
         Ok(())
     }
 
@@ -94,6 +96,13 @@ impl FormatParser for Yolo5ObbParser {
             coordinates[i] = coordinate;
         }
 
+        let source_file = self
+            .current_entry.as_ref()
+            .unwrap()
+            .file_name()
+            .to_string_lossy()
+            .to_string();
+
         Ok(Annotation {
             x1: coordinates[0],
             y1: coordinates[1],
@@ -104,15 +113,11 @@ impl FormatParser for Yolo5ObbParser {
             x4: coordinates[6],
             y4: coordinates[7],
             class: ClassRepresentation::ClassName(elements[8].to_string()),
-            source_file: String::from(
-                self.source_directory
-                    .as_ref()
-                    .unwrap()
-                    .file_name()
-                    .unwrap()
-                    .to_string_lossy(),
-            ),
-            difficulty: elements.get(9).ok_or(anyhow!(""))?.parse()?,
+            source_file,
+            difficulty: match elements.get(9) {
+                Some(i) => i.parse::<i32>().unwrap() != 0,
+                None => false,
+            }
         })
     }
 
@@ -123,7 +128,7 @@ impl FormatParser for Yolo5ObbParser {
 
         let reader = self.current_reader.as_mut();
 
-        if reader.is_none() || reader_has_data_left(reader.unwrap()).unwrap() {
+        if reader.is_none() || !reader_has_data_left(reader.unwrap()).unwrap() {
             self.current_entry = self.look_for_next_entry().ok();
             if self.current_entry.is_none() {
                 return false;
@@ -131,6 +136,9 @@ impl FormatParser for Yolo5ObbParser {
         }
 
         let current_entry = &self.current_entry;
+        if let Some(entry) = &self.current_entry {
+            println!("{:?}", entry.file_name());
+        }
 
         let text_file = match File::open(current_entry.as_ref().unwrap().path()) {
             Ok(file) => file,
