@@ -1,0 +1,4 @@
+data/io.github.diegoivan.label_swap.desktop.in
+data/io.github.diegoivan.label_swap.metainfo.xml.in
+data/io.github.diegoivan.label_swap.gschema.xml
+src/window.ui

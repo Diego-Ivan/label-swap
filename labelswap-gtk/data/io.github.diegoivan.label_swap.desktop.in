@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=label-swap
+Exec=label-swap
+Icon=io.github.diegoivan.label_swap
+Terminal=false
+Type=Application
+Categories=GTK;
+StartupNotify=true

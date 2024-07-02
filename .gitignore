@@ -1,1 +1,4 @@
 /target
+.vscode/
+.flatpak/
+labelswap-gtk/src/config.rs
