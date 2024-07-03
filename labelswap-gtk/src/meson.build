@@ -3,6 +3,7 @@ gnome = import('gnome')
 
 blueprints = files (
   'ui/window.blp',
+  'ui/file-chooser-row.blp',
 )
 
 blueprint_compiler = find_program('blueprint-compiler')

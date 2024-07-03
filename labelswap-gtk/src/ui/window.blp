@@ -9,8 +9,10 @@ template $LabelSwapWindow : Adw.ApplicationWindow {
         [top]
         Adw.HeaderBar header_bar {}
 
-        content: Gtk.Label label {
-            label: "Test";
+        content: Adw.PreferencesGroup {
+            $LabelSwapFileChooserRow file_row {
+                title: _("Select Source");
+            }
         };
     };
 }

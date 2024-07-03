@@ -1,6 +1,6 @@
 /* window.rs
  *
- * Copyright 2024 Diego Iván
+ * Copyright 2024 Diego Iván M.E <diegoivan.mae@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-use gtk::prelude::*;
+use crate::widgets;
+//use gtk::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{gio, glib};
 
@@ -32,7 +33,7 @@ mod imp {
         #[template_child]
         pub header_bar: TemplateChild<adw::HeaderBar>,
         #[template_child]
-        pub label: TemplateChild<gtk::Label>,
+        pub file_row: TemplateChild<widgets::LabelSwapFileChooserRow>,
     }
 
     #[glib::object_subclass]
