@@ -29,11 +29,8 @@ mod imp {
     #[derive(Debug, Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/diegoivan/label_swap/ui/window.ui")]
     pub struct LabelSwapWindow {
-        // Template widgets
         #[template_child]
-        pub header_bar: TemplateChild<adw::HeaderBar>,
-        #[template_child]
-        pub file_row: TemplateChild<widgets::LabelSwapFileChooserRow>,
+        pub source_row: TemplateChild<widgets::LabelSwapFileChooserRow>,
     }
 
     #[glib::object_subclass]

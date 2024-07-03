@@ -1,18 +1,86 @@
 using Gtk 4.0;
 using Adw 1;
 
+menu primary_menu {
+  section {
+    item {
+      label: _("_Preferences");
+      action: "app.preferences";
+    }
+
+    item (_("Keyaboard Shortcuts"), "win.show-help-overlay")
+    item (_("_About Annotation Switch"), "app.about")
+  }
+}
+
 template $LabelSwapWindow : Adw.ApplicationWindow {
-    default-height: 600;
-    default-width: 480;
+  title: _("Annotation Switch");
+  default-width: 400;
+  default-height: 400;
 
-    content: Adw.ToolbarView {
-        [top]
-        Adw.HeaderBar header_bar {}
+  content: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      [end]
+      Gtk.MenuButton {
+        primary: true;
+        icon-name: "open-menu-symbolic";
+        tooltip-text: _("Menu");
+        menu-model: primary_menu;
+      }
+    }
 
-        content: Adw.PreferencesGroup {
-            $LabelSwapFileChooserRow file_row {
-                title: _("Select Source");
+    Gtk.ScrolledWindow {
+      Adw.Clamp {
+        margin-top: 12;
+        margin-bottom: 24;
+        margin-start: 12;
+        margin-end: 12;
+        Gtk.Box {
+          orientation: vertical;
+          spacing: 18;
+
+          Adw.PreferencesGroup {
+            title: _("Source Annotations");
+
+            Adw.ComboRow source_format_row {
+              title: _("Format");
             }
-        };
-    };
+
+            $LabelSwapFileChooserRow source_row {
+            }
+          }
+
+          Adw.PreferencesGroup {
+            title: _("Target Annotations");
+            Adw.ComboRow target_format_row {
+              title: _("Format");
+            }
+
+            $LabelSwapFileChooserRow target_row {
+            }
+          }
+
+          Adw.PreferencesGroup additional_group {
+            title: _("Additional Data");
+
+            $LabelSwapFileChooserRow image_directory_row {
+              file-type: folder;
+              title: _("Image folder");
+            }
+
+            $LabelSwapFileChooserRow mappings_row {
+              title: _("Category Mapping (CSV)");
+            }
+          }
+
+          Button convert_button {
+            styles ["suggested-action", "pill"]
+            halign: center;
+            label: _("Convert");
+          }
+        }
+      }
+    }
+  };
 }
