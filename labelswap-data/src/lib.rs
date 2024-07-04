@@ -5,6 +5,7 @@ use anyhow::Result;
 pub mod models;
 pub mod conversion_pipeline;
 pub mod parser;
+pub mod transforms;
 
 pub fn reader_has_data_left<R>(reader: &mut BufReader<R>) -> Result<bool, io::Error>
 where
