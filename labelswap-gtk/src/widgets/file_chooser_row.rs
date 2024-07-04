@@ -29,9 +29,9 @@ mod imp {
     #[template(resource = "/io/github/diegoivan/label_swap/ui/file-chooser-row.ui")]
     pub struct LabelSwapFileChooserRow {
         #[property(get, set, nullable)]
-        pub (super) file: RefCell<Option<gio::File>>,
+        pub(super) file: RefCell<Option<gio::File>>,
         #[property(get, set, builder(Default::default()))]
-        pub (super) file_type: Cell<FileSource>,
+        pub(super) file_type: Cell<FileSource>,
     }
 
     #[glib::object_subclass]
@@ -82,7 +82,11 @@ impl LabelSwapFileChooserRow {
         match file {
             Ok(file) => {
                 let mut file_name = String::from(file.basename().unwrap().to_str().unwrap());
-                if file.query_file_type(gio::FileQueryInfoFlags::NOFOLLOW_SYMLINKS, gio::Cancellable::NONE) == gio::FileType::Directory {
+                if file.query_file_type(
+                    gio::FileQueryInfoFlags::NOFOLLOW_SYMLINKS,
+                    gio::Cancellable::NONE,
+                ) == gio::FileType::Directory
+                {
                     file_name.push_str("/");
                 }
                 self.set_subtitle(&file_name);

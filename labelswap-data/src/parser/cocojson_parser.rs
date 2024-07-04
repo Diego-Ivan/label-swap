@@ -5,18 +5,18 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-use crate::models::{annotation::ClassRepresentation, Annotation};
-use super::FormatParser;
 use super::format_parser::ParserError;
-use std::{clone, fs::File, io::BufReader, path::Path};
-use anyhow::{Result, anyhow};
-use std::collections::HashMap;
+use super::FormatParser;
+use crate::models::{annotation::ClassRepresentation, Annotation};
+use anyhow::{anyhow, Result};
 use serde_json::value::Value;
+use std::collections::{HashMap, VecDeque};
+use std::{clone, fs::File, io::BufReader, path::Path};
 
 pub struct CocoJsonParser {
     category_map: Option<HashMap<i64, String>>,
     image_map: Option<HashMap<i64, String>>,
-    annotation_array: Option<Vec<Value>>,
+    annotation_array: Option<VecDeque<Value>>,
 }
 
 impl CocoJsonParser {
@@ -33,7 +33,9 @@ impl FormatParser for CocoJsonParser {
     fn init(&mut self, path: Box<Path>) -> Result<()> {
         let metadata = std::fs::metadata(&path)?;
         if metadata.file_type().is_dir() {
-            return Err(anyhow!(ParserError::WrongFileType("Expected path to be a file".into())));
+            return Err(anyhow!(ParserError::WrongFileType(
+                "Expected path to be a file".into()
+            )));
         }
 
         // if !path.ends_with("json") {
@@ -41,16 +43,21 @@ impl FormatParser for CocoJsonParser {
         // }
 
         let buf_reader = BufReader::new(File::open(&path)?);
-        
-        let mut map: serde_json::Map<String, Value> = 
-            serde_json::from_reader(buf_reader)?;
-        
-        let annotation_array = match map.remove("annotations").ok_or(anyhow!("Expected annotations"))? {
-            Value::Array(array) => array,
-            _ => return Err(anyhow!("Expected annotations to be an array"))
+
+        let mut map: serde_json::Map<String, Value> = serde_json::from_reader(buf_reader)?;
+
+        let annotation_array: VecDeque<Value> = match map
+            .remove("annotations")
+            .ok_or(anyhow!("Expected annotations"))?
+        {
+            Value::Array(array) => array.into(),
+            _ => return Err(anyhow!("Expected annotations to be an array")),
         };
 
-        let category_array = match map.remove("categories").ok_or(anyhow!("Expected categories"))? {
+        let category_array = match map
+            .remove("categories")
+            .ok_or(anyhow!("Expected categories"))?
+        {
             Value::Array(array) => array,
             _ => return Err(anyhow!("Expected categories to be an array")),
         };
@@ -69,7 +76,7 @@ impl FormatParser for CocoJsonParser {
     }
 
     fn get_next(&mut self) -> Result<Annotation> {
-        let current_item = self.annotation_array.as_mut().unwrap().pop().unwrap();
+        let current_item = self.annotation_array.as_mut().unwrap().pop_front().unwrap();
         let category_map = self.category_map.as_ref().unwrap();
         let image_map = self.image_map.as_ref().unwrap();
 
@@ -78,18 +85,26 @@ impl FormatParser for CocoJsonParser {
             _ => return Err(anyhow!("Expected value to be a dictionary")),
         };
 
-        let category_id = match map.remove("category_id").ok_or(anyhow!("Expected category_id element"))? {
+        let category_id = match map
+            .remove("category_id")
+            .ok_or(anyhow!("Expected category_id element"))?
+        {
             Value::Number(num) => num.as_i64().unwrap(),
-            _ => return Err(anyhow!("Expected category_id element to be a number"))
+            _ => return Err(anyhow!("Expected category_id element to be a number")),
         };
         let category_name = category_map
             .get(&category_id)
-            .ok_or(anyhow!("Category id {category_id} not found in category map"))?
+            .ok_or(anyhow!(
+                "Category id {category_id} not found in category map"
+            ))?
             .clone();
 
-        let image = match map.get("image_id").ok_or(anyhow!("Expected image_id element"))? {
+        let image = match map
+            .get("image_id")
+            .ok_or(anyhow!("Expected image_id element"))?
+        {
             Value::Number(num) => num.as_i64().unwrap(),
-            _ => return Err(anyhow!("Expected image_id element to be a number"))
+            _ => return Err(anyhow!("Expected image_id element to be a number")),
         };
 
         let image = image_map
@@ -99,11 +114,14 @@ impl FormatParser for CocoJsonParser {
 
         let bbox = match map.remove("bbox").ok_or(anyhow!("Expected bbox array"))? {
             Value::Array(bbox) => bbox,
-            _ => return Err(anyhow!("Expected bbox to be an array"))
+            _ => return Err(anyhow!("Expected bbox to be an array")),
         };
 
         let bbox = Self::parse_bbox_array(&bbox)?;
-        let class = ClassRepresentation::Both(category_name, category_id.to_string());
+        let class = ClassRepresentation::Both {
+            name: category_name,
+            id: category_id.to_string(),
+        };
 
         Ok(Annotation {
             class,
@@ -130,7 +148,7 @@ impl CocoJsonParser {
             let id = image_object
                 .get("id")
                 .ok_or(anyhow!("Expected id member to exist"))?;
-            
+
             let id = match id {
                 Value::Number(num) => num
                     .as_i64()
@@ -153,7 +171,7 @@ impl CocoJsonParser {
         Ok(table)
     }
 
-    fn parse_image_map(&self, array: &[Value]) -> Result<HashMap<i64, String>>{
+    fn parse_image_map(&self, array: &[Value]) -> Result<HashMap<i64, String>> {
         let mut table = HashMap::new();
 
         for value in array {
@@ -165,7 +183,7 @@ impl CocoJsonParser {
             let id = image_object
                 .get("id")
                 .ok_or(anyhow!("Expected id member to exist"))?;
-            
+
             let id = match id {
                 Value::Number(num) => num
                     .as_i64()
@@ -202,7 +220,10 @@ impl CocoJsonParser {
         if array.len() == 4 {
             Ok((array[0], array[1], array[2], array[3]))
         } else {
-            Err(anyhow!("Expected four valid elements in bbox array, got {}", array.len()))
+            Err(anyhow!(
+                "Expected four valid elements in bbox array, got {}",
+                array.len()
+            ))
         }
     }
 }

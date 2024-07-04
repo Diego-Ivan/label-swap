@@ -29,8 +29,8 @@ use self::window::LabelSwapWindow;
 
 use config::{GETTEXT_PACKAGE, LOCALEDIR, PKGDATADIR};
 use gettextrs::{bind_textdomain_codeset, bindtextdomain, textdomain};
-use gtk::{gio, glib};
 use gtk::prelude::*;
+use gtk::{gio, glib};
 
 fn main() -> glib::ExitCode {
     // Set up gettext translations
@@ -47,7 +47,10 @@ fn main() -> glib::ExitCode {
     // Create a new GtkApplication. The application manages our main loop,
     // application windows, integration with the window manager/compositor, and
     // desktop features such as file opening and single-instance applications.
-    let app = LabelSwapApplication::new("io.github.diegoivan.label_swap", &gio::ApplicationFlags::empty());
+    let app = LabelSwapApplication::new(
+        "io.github.diegoivan.label_swap",
+        &gio::ApplicationFlags::empty(),
+    );
 
     // Run the application. This function will block until the application
     // exits. Upon return, we have our exit code to return to the shell. (This

@@ -9,7 +9,7 @@ where
     ClassName(S),
     ClassId(S),
     // ClassName, ClassRepresentation
-    Both(S, S),
+    Both { name: S, id: S },
 }
 
 impl<S: PartialEq + Into<String>> PartialEq for ClassRepresentation<S> {
@@ -17,24 +17,52 @@ impl<S: PartialEq + Into<String>> PartialEq for ClassRepresentation<S> {
         match (self, other) {
             (Self::ClassName(s), Self::ClassName(other)) => s == other,
             (Self::ClassId(s), Self::ClassId(o)) => s == o,
-            (Self::Both(s_name, s_id), Self::Both(o_name, o_id)) => s_name == o_name && s_id == o_id,
-            _ => false
+            (
+                Self::Both {
+                    name: s_name,
+                    id: s_id,
+                },
+                Self::Both {
+                    name: o_name,
+                    id: o_id,
+                },
+            ) => s_name == o_name && s_id == o_id,
+            _ => false,
         }
     }
 }
 
-impl ClassRepresentation<String>
-{
+impl ClassRepresentation<String> {
     pub const fn as_ref(&self) -> ClassRepresentation<&String> {
         match *self {
             Self::None => ClassRepresentation::None,
             Self::ClassName(ref s) => ClassRepresentation::ClassName(s),
             Self::ClassId(ref s) => ClassRepresentation::ClassId(s),
-            Self::Both(ref class, ref id) => ClassRepresentation::Both(class, id),
+            Self::Both { ref name, ref id } => ClassRepresentation::Both {
+                name: &name,
+                id: &id,
+            },
         }
     }
 }
 
+///
+/// The Annotation struct represents an annotation in a image. It uses oriented
+/// bounding boxes to represent its contents. The current bounding box
+/// format is the following:
+///                                        
+/// x1, y1                       x2, y2    
+/// ┌────────────────────────────────┐   
+/// │                                │   
+/// │                                │   
+/// │                                │   
+/// │                                │   
+/// │                                │   
+/// └────────────────────────────────┘   
+/// x4, y4                        x3, y3   
+///
+/// The Annotation struct is usually returned by implementations of FormatParser
+/// and used as inputs for FormatSerializer implementations.
 #[derive(Debug, PartialEq)]
 pub struct Annotation {
     pub class: ClassRepresentation<String>,
@@ -101,6 +129,6 @@ impl Annotation {
     }
 
     pub fn from_min_max(x_min: f64, x_max: f64, y_min: f64, y_max: f64) -> Annotation {
-        Self::new(x_min, y_min, x_max, y_min, x_max, y_max, x_min, y_max)
+        Self::new(x_min, x_max, x_max, x_min, y_min, y_min, y_max, y_max)
     }
 }
