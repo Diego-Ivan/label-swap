@@ -81,6 +81,7 @@ impl FormatParser for Yolo5ObbParser {
             .current_reader
             .as_mut()
             .ok_or(anyhow!("The stream is closed"))?;
+
         let mut line = String::new();
         let _ = reader.read_line(&mut line)?;
 
@@ -122,11 +123,12 @@ impl FormatParser for Yolo5ObbParser {
             x4: coordinates[6],
             y4: coordinates[7],
             class: ClassRepresentation::ClassName(elements[8].to_string()),
-            source_file,
+            source_file: Some(source_file),
             difficulty: match elements.get(9) {
                 Some(i) => i.parse::<i32>().unwrap() != 0,
                 None => false,
             },
+            image: None,
         })
     }
 

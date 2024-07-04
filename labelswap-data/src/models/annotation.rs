@@ -1,19 +1,46 @@
-#[derive(Debug, PartialEq)]
+use std::path::Path;
+
+#[derive(Debug)]
 pub enum ClassRepresentation<S>
 where
-    S: Into<String> + PartialEq<String>,
+    S: Into<String>,
 {
     None,
     ClassName(S),
     ClassId(S),
+    // ClassName, ClassRepresentation
     Both(S, S),
+}
+
+impl<S: PartialEq + Into<String>> PartialEq for ClassRepresentation<S> {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::ClassName(s), Self::ClassName(other)) => s == other,
+            (Self::ClassId(s), Self::ClassId(o)) => s == o,
+            (Self::Both(s_name, s_id), Self::Both(o_name, o_id)) => s_name == o_name && s_id == o_id,
+            _ => false
+        }
+    }
+}
+
+impl ClassRepresentation<String>
+{
+    pub const fn as_ref(&self) -> ClassRepresentation<&String> {
+        match *self {
+            Self::None => ClassRepresentation::None,
+            Self::ClassName(ref s) => ClassRepresentation::ClassName(s),
+            Self::ClassId(ref s) => ClassRepresentation::ClassId(s),
+            Self::Both(ref class, ref id) => ClassRepresentation::Both(class, id),
+        }
+    }
 }
 
 #[derive(Debug, PartialEq)]
 pub struct Annotation {
     pub class: ClassRepresentation<String>,
-    pub source_file: String,
+    pub source_file: Option<String>,
     pub difficulty: bool,
+    pub image: Option<Box<Path>>,
 
     pub x1: f64,
     pub x2: f64,
@@ -46,9 +73,15 @@ impl Annotation {
             y3,
             y4,
             class: ClassRepresentation::None,
-            source_file: String::new(),
+            source_file: None,
             difficulty: false,
+            image: None,
         }
+    }
+
+    // Assumes that the origin is in the top left corner
+    pub fn from_top_left_corner(x: f64, y: f64, width: f64, height: f64) -> Self {
+        Self::from_min_max(x, x + width, y, y + height)
     }
 
     pub fn from_centers(center_x: f64, center_y: f64, width: f64, height: f64) -> Annotation {

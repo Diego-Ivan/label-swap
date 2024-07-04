@@ -1,4 +1,4 @@
-use labelswap_data::models::{annotation::ClassRepresentation::*, Annotation};
+use labelswap_data::models::{annotation::ClassRepresentation, Annotation};
 use labelswap_data::parser::*;
 use std::path::Path;
 
@@ -9,7 +9,7 @@ fn test_io() {
     let mut parser = Yolo5ObbParser::new();
     parser
         .init(
-            Path::new("/var/home/diegoivan/Escritorio/annotation-example/tests/yolo5obb-labels")
+            Path::new("/var/home/diegoivan/Escritorio/annotation-example/labelswap-data/tests/yolo5obb-labels")
                 .into(),
         )
         .unwrap();
@@ -17,9 +17,10 @@ fn test_io() {
         &mut parser,
         vec![
             Annotation {
-                class: ClassName(String::from("small-vehicle")),
+                class: ClassRepresentation::ClassName(String::from("small-vehicle")),
                 difficulty: false,
-                source_file: String::from("001.txt"),
+                source_file: Some(String::from("001.txt")),
+                image: None,
                 x1: 287.0,
                 y1: 268.0,
                 x2: 282.0,
@@ -30,9 +31,10 @@ fn test_io() {
                 y4: 279.0,
             },
             Annotation {
-                class: ClassName(String::from("large-vehicle")),
+                class: ClassRepresentation::ClassName(String::from("large-vehicle")),
                 difficulty: false,
-                source_file: String::from("001.txt"),
+                source_file: Some(String::from("001.txt")),
+                image: None,
                 x1: 212.00000000000006,
                 y1: 285.0,
                 x2: 195.00000000000006,
@@ -43,9 +45,10 @@ fn test_io() {
                 y4: 293.0,
             },
             Annotation {
-                class: ClassName(String::from("large-vehicle")),
+                class: ClassRepresentation::ClassName(String::from("large-vehicle")),
                 difficulty: false,
-                source_file: String::from("001.txt"),
+                source_file: Some(String::from("001.txt")),
+                image: None,
                 x1: 167.0,
                 y1: 151.0,
                 x2: 149.0,
@@ -56,9 +59,10 @@ fn test_io() {
                 y4: 158.0,
             },
             Annotation {
-                class: ClassName(String::from("large-vehicle")),
+                class: ClassRepresentation::ClassName(String::from("large-vehicle")),
                 difficulty: false,
-                source_file: String::from("002.txt"),
+                source_file: Some(String::from("002.txt")),
+                image: None,
                 x1: 167.0,
                 y1: 151.0,
                 x2: 149.0,
