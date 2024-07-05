@@ -11,7 +11,7 @@ pub trait Transform {
     fn apply(&self, annotation: &mut Annotation, source_format: &Format, target_format: &Format);
 }
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, Hash, Debug)]
 pub enum RequiredTransformations {
     MapToName,
     MapToId,

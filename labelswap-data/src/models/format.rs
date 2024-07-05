@@ -7,7 +7,7 @@
 
 use std::collections::HashSet;
 
-use crate::transforms::transform::RequiredTransformations;
+use crate::transforms::transform::{self, RequiredTransformations};
 
 #[derive(PartialEq)]
 pub enum ClassFormat {
@@ -25,6 +25,16 @@ pub enum SourceType {
 pub enum ClassMapping {
     ContainsMapping,
     NoMapping,
+}
+
+impl ClassMapping {
+    #[inline]
+    pub fn has_mapping(&self) -> bool {
+        match *self {
+            Self::ContainsMapping => true,
+            Self::NoMapping => false,
+        }
+    }
 }
 
 #[derive(PartialEq, Eq)]
@@ -54,13 +64,18 @@ impl Format {
             transformations.insert(RequiredTransformations::Normalize);
         }
 
-        match (&self.class_format, &other.class_format) {
-            (ClassFormat::Name, ClassFormat::Id) => transformations.insert(RequiredTransformations::MapToId),
-            (ClassFormat::Name, ClassFormat::Both) => transformations.insert(RequiredTransformations::MapToId),
-            (ClassFormat::Id, ClassFormat::Name) => transformations.insert(RequiredTransformations::MapToName),
-            (ClassFormat::Id, ClassFormat::Both) => transformations.insert(RequiredTransformations::MapToName),
-            _ => { true },
-        };
+        if !self.class_mapping.has_mapping() {
+            let mapping = match (&self.class_format, &other.class_format) {
+                (ClassFormat::Name, ClassFormat::Id) => Some(RequiredTransformations::MapToId),
+                (ClassFormat::Name, ClassFormat::Both) => Some(RequiredTransformations::MapToId),
+                (ClassFormat::Id, ClassFormat::Name) => Some(RequiredTransformations::MapToName),
+                (ClassFormat::Id, ClassFormat::Both) => Some(RequiredTransformations::MapToName),
+                _ => None,
+            };
+            if let Some(mapping) = mapping {
+                transformations.insert(mapping);
+            }
+        }
 
         if self.image_path == ImagePath::NoPath && other.image_path == ImagePath::ContainsPath {
             transformations.insert(RequiredTransformations::LookupImage);
