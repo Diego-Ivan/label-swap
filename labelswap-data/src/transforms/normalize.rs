@@ -5,10 +5,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-use std::path::{Path, PathBuf};
+use crate::{
+    models::{Annotation, Format},
+    resolve_relative_path,
+};
 use anyhow::{anyhow, Result};
-use crate::{models::{Annotation, Format}, resolve_relative_path};
 use image::io::Reader as ImageReader;
+use std::path::PathBuf;
 
 use super::Transform;
 
@@ -21,19 +24,27 @@ impl Normalize {
         if !image_directory.is_dir() {
             return Err(anyhow!("Expected {:?} to be a directory", image_directory));
         }
-        Ok(Self {
-            image_directory
-        })
+        Ok(Self { image_directory })
     }
 }
 
 impl Transform for Normalize {
-    fn apply(&mut self, annotation: &mut Annotation, source_format: &Format, target_format: &Format) -> Result<()> {
-        let image_path = annotation.image
+    fn apply(
+        &mut self,
+        annotation: &mut Annotation,
+        _source_format: &Format,
+        _target_format: &Format,
+    ) -> Result<()> {
+        let image_path = annotation
+            .image
+            .as_ref()
             .ok_or(anyhow!("Expected image path in annotation"))?;
 
         let image_path = resolve_relative_path(&self.image_directory, &image_path)?;
         let (width, height) = ImageReader::open(&image_path)?.into_dimensions()?;
+
+        let width = f64::from(width);
+        let height = f64::from(height);
 
         annotation.x1 /= width;
         annotation.x2 /= width;
@@ -58,19 +69,27 @@ impl Denormalize {
         if !image_directory.is_dir() {
             return Err(anyhow!("Expected {:?} to be a directory", image_directory));
         }
-        Ok(Self {
-            image_directory
-        })
+        Ok(Self { image_directory })
     }
 }
 
 impl Transform for Denormalize {
-    fn apply(&mut self, annotation: &mut Annotation, source_format: &Format, target_format: &Format) -> Result<()> {
-        let image_path = annotation.image
+    fn apply(
+        &mut self,
+        annotation: &mut Annotation,
+        _source_format: &Format,
+        _target_format: &Format,
+    ) -> Result<()> {
+        let image_path = annotation
+            .image
+            .as_ref()
             .ok_or(anyhow!("Expected image path in annotation"))?;
 
         let image_path = resolve_relative_path(&self.image_directory, &image_path)?;
         let (width, height) = ImageReader::open(&image_path)?.into_dimensions()?;
+
+        let width = f64::from(width);
+        let height = f64::from(height);
 
         annotation.x1 *= width;
         annotation.x2 *= width;

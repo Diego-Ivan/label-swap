@@ -9,7 +9,12 @@ use crate::models::{Annotation, Format};
 use anyhow::Result;
 
 pub trait Transform {
-    fn apply(&mut self, annotation: &mut Annotation, source_format: &Format, target_format: &Format) -> Result<()>;
+    fn apply(
+        &mut self,
+        annotation: &mut Annotation,
+        source_format: &Format,
+        target_format: &Format,
+    ) -> Result<()>;
 }
 
 #[derive(PartialEq, Eq, Hash, Debug)]

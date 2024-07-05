@@ -5,7 +5,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-use std::{collections::{HashMap, HashSet}, path::{Path, PathBuf}};
+use std::{
+    collections::{HashMap, HashSet},
+    path::{Path, PathBuf},
+};
 
 use super::Transform;
 use crate::models::{Annotation, Format};
@@ -32,8 +35,14 @@ impl LookupImage {
 }
 
 impl Transform for LookupImage {
-    fn apply(&mut self, annotation: &mut Annotation, _source_format: &Format, _target_format: &Format) -> Result<()>{
-        let annotation_source = annotation.source_file
+    fn apply(
+        &mut self,
+        annotation: &mut Annotation,
+        _source_format: &Format,
+        _target_format: &Format,
+    ) -> Result<()> {
+        let annotation_source = annotation
+            .source_file
             .as_ref()
             .ok_or(anyhow!("Expected source file to be Some"))?;
 
@@ -41,23 +50,32 @@ impl Transform for LookupImage {
             annotation.image = Some(Path::new(image).into());
             return Ok(());
         }
-        
+
         if self.sources_without_image.contains(annotation_source) {
-            return Err(anyhow!("Annotation source does not have an image related to it"));
+            return Err(anyhow!(
+                "Annotation source does not have an image related to it"
+            ));
         }
 
-        let dir_entry = self.image_directory
+        let dir_entry = self
+            .image_directory
             .read_dir()?
             .filter_map(|file| file.ok())
-            .find(|file| file.file_name().to_str().unwrap().starts_with(annotation_source));
+            .find(|file| {
+                file.file_name()
+                    .to_str()
+                    .unwrap()
+                    .starts_with(annotation_source)
+            });
 
         return match dir_entry {
             Some(file) => {
                 let filename = String::from(file.file_name().to_str().unwrap());
-                self.source_to_image_map.insert(annotation_source.clone(), filename);
+                self.source_to_image_map
+                    .insert(annotation_source.clone(), filename);
                 annotation.image = Some(file.path().into());
                 Ok(())
-            },
+            }
             None => {
                 self.sources_without_image.insert(annotation_source.clone());
                 Err(anyhow!("Could not find an image for {annotation_source}"))

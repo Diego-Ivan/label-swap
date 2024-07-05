@@ -11,7 +11,7 @@ use crate::models::{annotation::ClassRepresentation, Annotation};
 use anyhow::{anyhow, Result};
 use serde_json::value::Value;
 use std::collections::{HashMap, VecDeque};
-use std::{clone, fs::File, io::BufReader, path::Path};
+use std::{fs::File, io::BufReader, path::Path};
 
 pub struct CocoJsonParser {
     category_map: Option<HashMap<i64, String>>,
@@ -38,9 +38,11 @@ impl FormatParser for CocoJsonParser {
             )));
         }
 
-        // if !path.ends_with("json") {
-        //     return Err(anyhow!("Expected {:?} to be a JSON file", path));
-        // }
+        if let Some(extension) = path.extension() {
+            if extension != "json" {
+                return Err(anyhow!("Expected {:?} to be a json file", path));
+            }
+        }
 
         let buf_reader = BufReader::new(File::open(&path)?);
 
@@ -117,7 +119,7 @@ impl FormatParser for CocoJsonParser {
             _ => return Err(anyhow!("Expected bbox to be an array")),
         };
 
-        let bbox = Self::parse_bbox_array(&bbox)?;
+        let (x, y, width, height) = Self::parse_bbox_array(&bbox)?;
         let class = ClassRepresentation::Both {
             name: category_name,
             id: category_id.to_string(),
@@ -126,7 +128,7 @@ impl FormatParser for CocoJsonParser {
         Ok(Annotation {
             class,
             image: Some(Path::new(&image).into()),
-            ..Annotation::from_top_left_corner(bbox.0, bbox.1, bbox.2, bbox.3)
+            ..Annotation::from_top_left_corner(x, y, width, height)
         })
     }
 

@@ -1,9 +1,9 @@
-use std::{collections::HashSet, hash::Hash};
+use std::collections::HashSet;
 
 use labelswap_data::{models::format::*, transforms::RequiredTransformations};
 
 #[test]
-pub fn normalize_compatibility () {
+pub fn normalize_compatibility() {
     let source = Format {
         name: String::from("Dummy format 1"),
         id: String::from("dummy1"),
@@ -99,7 +99,6 @@ pub fn mapping_name_to_id() {
     let mut expected = HashSet::new();
     expected.insert(RequiredTransformations::MapToId);
     assert_eq!(compatibility, expected);
-
 
     // Test transformation from name -> id with mapping in source format
     let source = Format {

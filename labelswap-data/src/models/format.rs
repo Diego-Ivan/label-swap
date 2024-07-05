@@ -7,13 +7,13 @@
 
 use std::collections::HashSet;
 
-use crate::transforms::transform::{self, RequiredTransformations};
+use crate::transforms::transform::RequiredTransformations;
 
 #[derive(PartialEq)]
 pub enum ClassFormat {
     Name,
     Id,
-    Both
+    Both,
 }
 
 #[derive(PartialEq)]
@@ -57,7 +57,7 @@ pub struct Format {
 impl Format {
     pub fn check_compatibility(&self, other: &Format) -> HashSet<RequiredTransformations> {
         let mut transformations = HashSet::new();
-        
+
         if self.is_normalized && !other.is_normalized {
             transformations.insert(RequiredTransformations::Denormalize);
         } else if !self.is_normalized && other.is_normalized {

@@ -5,5 +5,4 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-pub struct ConversionPipeline {
-}
+pub struct ConversionPipeline {}

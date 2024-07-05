@@ -1,9 +1,12 @@
-use std::{io::{self, BufRead, BufReader, Read}, path::{Path, PathBuf}};
+use std::{
+    io::{self, BufRead, BufReader, Read},
+    path::{Path, PathBuf},
+};
 
 use anyhow::Result;
 
-pub mod models;
 pub mod conversion_pipeline;
+pub mod models;
 pub mod parser;
 pub mod transforms;
 
