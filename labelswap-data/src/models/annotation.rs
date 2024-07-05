@@ -44,6 +44,15 @@ impl ClassRepresentation<String> {
             },
         }
     }
+
+    pub fn to_both(self, missing_value: String) -> ClassRepresentation<String> {
+        match self {
+            Self::None => Self::None,
+            Self::ClassName(name) => Self::Both { name, id: missing_value },
+            Self::ClassId(id) => Self::Both{ id, name: missing_value},
+            Self::Both { name, id } => Self::Both { name, id },
+        }
+    }
 }
 
 ///
