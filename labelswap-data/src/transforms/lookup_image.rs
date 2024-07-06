@@ -46,9 +46,7 @@ impl Transform for LookupImage {
             .as_ref()
             .ok_or(anyhow!("Expected source file to be Some"))?
             .file_name()
-            .ok_or(anyhow!("Failed to obtain file name from source file"))?
-            .to_str()
-            .unwrap();
+            .ok_or(anyhow!("Failed to obtain file name from source file"))?;
 
         if let Some(image) = self.source_to_image_map.get(annotation_source) {
             annotation.image = Some(image.clone());
@@ -65,12 +63,7 @@ impl Transform for LookupImage {
             .image_directory
             .read_dir()?
             .filter_map(|file| file.ok())
-            .find(|file| {
-                file.file_name()
-                    .to_str()
-                    .unwrap()
-                    .starts_with(annotation_source)
-            });
+            .find(|file| file.file_name().starts_with(annotation_source));
 
         return match dir_entry {
             Some(file) => {
