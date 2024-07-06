@@ -16,7 +16,7 @@ use anyhow::{anyhow, Result};
 
 pub struct LookupImage {
     pub image_directory: PathBuf,
-    source_to_image_map: HashMap<String, String>,
+    source_to_image_map: HashMap<String, PathBuf>,
     sources_without_image: HashSet<String>,
 }
 
@@ -44,10 +44,14 @@ impl Transform for LookupImage {
         let annotation_source = annotation
             .source_file
             .as_ref()
-            .ok_or(anyhow!("Expected source file to be Some"))?;
+            .ok_or(anyhow!("Expected source file to be Some"))?
+            .file_name()
+            .ok_or(anyhow!("Failed to obtain file name from source file"))?
+            .to_str()
+            .unwrap();
 
         if let Some(image) = self.source_to_image_map.get(annotation_source) {
-            annotation.image = Some(Path::new(image).into());
+            annotation.image = Some(image.clone());
             return Ok(());
         }
 
@@ -70,14 +74,14 @@ impl Transform for LookupImage {
 
         return match dir_entry {
             Some(file) => {
-                let filename = String::from(file.file_name().to_str().unwrap());
+                let filename = file.path();
                 self.source_to_image_map
-                    .insert(annotation_source.clone(), filename);
+                    .insert(annotation_source.to_string(), filename);
                 annotation.image = Some(file.path().into());
                 Ok(())
             }
             None => {
-                self.sources_without_image.insert(annotation_source.clone());
+                self.sources_without_image.insert(annotation_source.to_string());
                 Err(anyhow!("Could not find an image for {annotation_source}"))
             }
         };

@@ -109,9 +109,7 @@ impl FormatParser for Yolo5ObbParser {
             .current_entry
             .as_ref()
             .unwrap()
-            .file_name()
-            .to_string_lossy()
-            .to_string();
+            .path();
 
         Ok(Annotation {
             x1: coordinates[0],

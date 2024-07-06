@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug)]
 pub enum ClassRepresentation<S>
@@ -75,9 +75,9 @@ impl ClassRepresentation<String> {
 #[derive(Debug, PartialEq)]
 pub struct Annotation {
     pub class: ClassRepresentation<String>,
-    pub source_file: Option<String>,
+    pub source_file: Option<PathBuf>,
     pub difficulty: bool,
-    pub image: Option<Box<Path>>,
+    pub image: Option<PathBuf>,
 
     pub x1: f64,
     pub x2: f64,

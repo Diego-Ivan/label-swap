@@ -1,6 +1,6 @@
 use labelswap_data::models::{annotation::ClassRepresentation, Annotation};
 use labelswap_data::parser::*;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 mod common_parser;
 
@@ -19,7 +19,7 @@ fn test_io() {
             Annotation {
                 class: ClassRepresentation::ClassName(String::from("small-vehicle")),
                 difficulty: false,
-                source_file: Some(String::from("001.txt")),
+                source_file: Some(PathBuf::from("/var/home/diegoivan/Escritorio/annotation-example/labelswap-data/tests/yolo5obb-labels/001.txt")),
                 image: None,
                 x1: 287.0,
                 y1: 268.0,
@@ -33,7 +33,7 @@ fn test_io() {
             Annotation {
                 class: ClassRepresentation::ClassName(String::from("large-vehicle")),
                 difficulty: false,
-                source_file: Some(String::from("001.txt")),
+                source_file: Some(PathBuf::from("/var/home/diegoivan/Escritorio/annotation-example/labelswap-data/tests/yolo5obb-labels/001.txt")),
                 image: None,
                 x1: 212.00000000000006,
                 y1: 285.0,
@@ -47,7 +47,7 @@ fn test_io() {
             Annotation {
                 class: ClassRepresentation::ClassName(String::from("large-vehicle")),
                 difficulty: false,
-                source_file: Some(String::from("001.txt")),
+                source_file: Some(PathBuf::from("/var/home/diegoivan/Escritorio/annotation-example/labelswap-data/tests/yolo5obb-labels/001.txt")),
                 image: None,
                 x1: 167.0,
                 y1: 151.0,
@@ -61,7 +61,7 @@ fn test_io() {
             Annotation {
                 class: ClassRepresentation::ClassName(String::from("large-vehicle")),
                 difficulty: false,
-                source_file: Some(String::from("002.txt")),
+                source_file: Some(PathBuf::from("/var/home/diegoivan/Escritorio/annotation-example/labelswap-data/tests/yolo5obb-labels/002.txt")),
                 image: None,
                 x1: 167.0,
                 y1: 151.0,
