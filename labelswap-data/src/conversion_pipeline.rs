@@ -9,6 +9,7 @@ use crate::transforms::*;
 use crate::models::Format;
 use std::collections::HashMap;
 use std::path::PathBuf;
+use std::cell::Cell;
 
 use anyhow::{anyhow, Result};
 
@@ -17,7 +18,7 @@ pub struct ConversionPipeline {
     source_format: Format,
     target_format: Format,
     image_directory: Option<PathBuf>,
-    mapping: Option<HashMap<String, String>>,
+    mapping: Cell<Option<HashMap<String, String>>>,
 }
 
 impl ConversionPipeline {
@@ -27,7 +28,7 @@ impl ConversionPipeline {
             source_format,
             target_format,
             image_directory: None,
-            mapping: None,
+            mapping: Cell::new(None),
         }
     }
 
@@ -39,12 +40,8 @@ impl ConversionPipeline {
         self.image_directory = image_directory;
     }
 
-    pub fn mapping(&self) -> &Option<HashMap<String, String>> {
-        &self.mapping
-    }
-
     pub fn set_mapping(&mut self, mapping: Option<HashMap<String, String>>) {
-        self.mapping = mapping;
+        self.mapping.set(mapping);
     }
 
     pub fn convert(&mut self) -> Result<()> {
@@ -55,37 +52,41 @@ impl ConversionPipeline {
     fn configure(&mut self) -> Result<()> {
         let transformations = self.source_format.check_compatibility(&self.target_format);
         if transformations.contains(&RequiredTransformations::Denormalize) {
-            if self.image_directory.is_none() {
-                return Err(anyhow!("Expected image directory to be Some"))
+            match self.image_directory.as_ref() {
+                Some(image_directory) => {
+                    let denorm = Denormalize::new(PathBuf::from(image_directory))?;
+                    self.transforms.push(Box::new(denorm));
+                },
+                None => return Err(anyhow!("Expected image directory to be Some"))
             }
-            let image_directory = self.image_directory.as_ref().unwrap().clone();
-            let denorm = Box::new(Denormalize::new(image_directory)?);
-            self.transforms.push(denorm);
         } else if transformations.contains(&RequiredTransformations::Normalize) {
-            if self.image_directory.is_none() {
-                return Err(anyhow!("Expected image directory to be Some"))
+            match self.image_directory.as_ref() {
+                Some(image_directory) => {
+                    let norm = Normalize::new(PathBuf::from(image_directory))?;
+                    self.transforms.push(Box::new(norm));
+                },
+                None => return Err(anyhow!("Expected image directory to be Some"))
             }
-            let image_directory = self.image_directory.as_ref().unwrap().clone();
-            let norm = Box::new(Normalize::new(image_directory)?);
-            self.transforms.push(norm);
         }
 
         if transformations.contains(&RequiredTransformations::LookupImage) {
-            if self.image_directory.is_none() {
-                return Err(anyhow!("Expected image directory to be Some"))
+            match self.image_directory.as_ref() {
+                Some(image_directory) => {
+                    let lookup = LookupImage::new(PathBuf::from(image_directory))?;
+                    self.transforms.push(Box::new(lookup));
+                }
+                None => return Err(anyhow!("Expected image directory to be Some"))
             }
-            let image_directory = self.image_directory.as_ref().unwrap().clone();
-
-            let lookup = LookupImage::new(image_directory)?;
-            self.transforms.push(Box::new(lookup));
         }
 
         if transformations.contains(&RequiredTransformations::MapToId) || transformations.contains(&RequiredTransformations::MapToName) {
-            if self.mapping.is_none() {
-                return Err(anyhow!("Expected mapping in the transformations"));
+            match self.mapping.take() {
+                Some(map) => {
+                    let map = ClassMapping::new(map);
+                    self.transforms.push(Box::new(map));
+                },
+                None => return Err(anyhow!("Expected mapping in the transformations")),
             }
-            let map = ClassMapping::new(self.mapping.as_ref().unwrap().clone());
-            self.transforms.push(Box::new(map));
         }
 
         Ok(())

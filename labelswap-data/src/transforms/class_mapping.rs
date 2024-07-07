@@ -8,7 +8,7 @@
 use std::collections::HashMap;
 
 use super::Transform;
-use crate::models::{annotation::{self, ClassRepresentation::{self, Both,ClassId,ClassName}}, Annotation, Format};
+use crate::models::{annotation::ClassRepresentation::{self, Both,ClassId,ClassName}, Annotation, Format};
 use anyhow::anyhow;
 
 pub struct ClassMapping {
