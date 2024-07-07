@@ -30,23 +30,20 @@ impl Yolo5ObbParser {
     }
 
     fn look_for_next_entry(&mut self) -> Result<DirEntry> {
-        let mut entry: Option<DirEntry> = None;
         let enumerator: &mut ReadDir = self.file_enumerator.as_mut().unwrap();
+
         while let Some(next_entry) = enumerator.next() {
             let next_entry = next_entry?;
-            if next_entry
-                .file_name()
-                .into_string()
-                .unwrap()
-                .ends_with(".txt")
-            {
-                entry = Some(next_entry);
-                break;
+            let path = next_entry.path();
+            let extension = path
+                .extension()
+                .ok_or(anyhow!("Expected entry to have a file extension"))?;
+            if extension == "txt" {
+                return Ok(next_entry);
             }
         }
-        entry.ok_or(anyhow!(ParserError::WrongFormat(format!(
-            "Unable to find text file"
-        ))))
+
+        Err(anyhow!("Could not find a text file"))
     }
 
     fn reader_has_data(&mut self) -> bool {
@@ -87,22 +84,15 @@ impl FormatParser for Yolo5ObbParser {
 
         let elements: Vec<&str> = line.trim().split(" ").collect();
         if elements.len() < 9 {
-            return Err(anyhow!(ParserError::WrongFormat(format!(
-                "Expected at least 9 elements in line {line}"
-            ))));
+            return Err(anyhow!("Expected at least 9 elements in line {line}"));
         }
 
-        let mut coordinates = [0.0; 8];
-        for i in 0..coordinates.len() {
-            let coordinate: f64 = match elements[i].parse() {
-                Ok(val) => val,
-                Err(err) => {
-                    return Err(anyhow!(ParserError::WrongFormat(format!(
-                        "Unable to parse element {i} in line {line}: {err}"
-                    ))))
-                }
-            };
-            coordinates[i] = coordinate;
+        let coordinates: Vec<f64> = elements[..8]
+            .iter()
+            .filter_map(|c| c.parse::<f64>().ok())
+            .collect();
+        if coordinates.len() < 8 {
+            return Err(anyhow!("Expected 4 (x, y) pairs, got {}", coordinates.len()))
         }
 
         let source_file = self
@@ -145,10 +135,6 @@ impl FormatParser for Yolo5ObbParser {
         }
 
         let current_entry = &self.current_entry;
-        if let Some(entry) = &self.current_entry {
-            println!("{:?}", entry.file_name());
-        }
-
         let text_file = match File::open(current_entry.as_ref().unwrap().path()) {
             Ok(file) => file,
             Err(e) => {

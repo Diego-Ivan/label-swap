@@ -14,17 +14,17 @@ use std::collections::{HashMap, VecDeque};
 use std::{fs::File, io::BufReader, path::Path};
 
 pub struct CocoJsonParser {
-    category_map: Option<HashMap<i64, String>>,
-    image_map: Option<HashMap<i64, String>>,
-    annotation_array: Option<VecDeque<Value>>,
+    category_map: HashMap<i64, String>,
+    image_map: HashMap<i64, String>,
+    annotation_array: VecDeque<Value>,
 }
 
 impl CocoJsonParser {
     pub fn new() -> Self {
         Self {
-            category_map: None,
-            image_map: None,
-            annotation_array: None,
+            category_map: HashMap::new(),
+            image_map: HashMap::new(),
+            annotation_array: VecDeque::new(),
         }
     }
 }
@@ -48,7 +48,7 @@ impl FormatParser for CocoJsonParser {
 
         let mut map: serde_json::Map<String, Value> = serde_json::from_reader(buf_reader)?;
 
-        let annotation_array: VecDeque<Value> = match map
+        self.annotation_array = match map
             .remove("annotations")
             .ok_or(anyhow!("Expected annotations"))?
         {
@@ -64,23 +64,23 @@ impl FormatParser for CocoJsonParser {
             _ => return Err(anyhow!("Expected categories to be an array")),
         };
 
-        self.annotation_array = Some(annotation_array);
-        self.category_map = Some(self.parse_category_array(&category_array)?);
+        self.parse_category_array(&category_array)?;
 
         let image_array = match map.get("images").ok_or(anyhow!("Expected images"))? {
             Value::Array(array) => array,
             _ => return Err(anyhow!("Expected images to be an array")),
         };
 
-        self.image_map = Some(self.parse_image_map(&image_array)?);
+        self.parse_image_map(&image_array)?;
 
         Ok(())
     }
 
     fn get_next(&mut self) -> Result<Annotation> {
-        let current_item = self.annotation_array.as_mut().unwrap().pop_front().unwrap();
-        let category_map = self.category_map.as_ref().unwrap();
-        let image_map = self.image_map.as_ref().unwrap();
+        let current_item = self
+            .annotation_array
+            .pop_front()
+            .ok_or(anyhow!("Expected value"))?;
 
         let mut map = match current_item {
             Value::Object(map) => map,
@@ -94,7 +94,7 @@ impl FormatParser for CocoJsonParser {
             Value::Number(num) => num.as_i64().unwrap(),
             _ => return Err(anyhow!("Expected category_id element to be a number")),
         };
-        let category_name = category_map
+        let category_name = self.category_map
             .get(&category_id)
             .ok_or(anyhow!(
                 "Category id {category_id} not found in category map"
@@ -109,7 +109,7 @@ impl FormatParser for CocoJsonParser {
             _ => return Err(anyhow!("Expected image_id element to be a number")),
         };
 
-        let image = image_map
+        let image = self.image_map
             .get(&image)
             .ok_or(anyhow!("Image id {image} not found in image map"))?
             .clone();
@@ -133,14 +133,12 @@ impl FormatParser for CocoJsonParser {
     }
 
     fn has_next(&mut self) -> bool {
-        self.annotation_array.as_ref().unwrap().len() != 0
+        self.annotation_array.len() > 0
     }
 }
 
 impl CocoJsonParser {
-    fn parse_category_array(&self, array: &[Value]) -> Result<HashMap<i64, String>> {
-        let mut table = HashMap::new();
-
+    fn parse_category_array(&mut self, array: &[Value]) -> Result<()> {
         for value in array {
             let image_object = match value {
                 Value::Object(map) => map,
@@ -167,15 +165,13 @@ impl CocoJsonParser {
                 _ => return Err(anyhow!("Expected name to be a string")),
             };
 
-            table.insert(id, category_name.clone());
+            self.category_map.insert(id, category_name.clone());
         }
 
-        Ok(table)
+        Ok(())
     }
 
-    fn parse_image_map(&self, array: &[Value]) -> Result<HashMap<i64, String>> {
-        let mut table = HashMap::new();
-
+    fn parse_image_map(&mut self, array: &[Value]) -> Result<()> {
         for value in array {
             let image_object = match value {
                 Value::Object(map) => map,
@@ -202,14 +198,14 @@ impl CocoJsonParser {
                 _ => return Err(anyhow!("Expected file_name to be a string")),
             };
 
-            table.insert(id, filename.clone());
+            self.image_map.insert(id, filename.clone());
         }
 
-        Ok(table)
+        Ok(())
     }
 
     fn parse_bbox_array(array: &[Value]) -> Result<(f64, f64, f64, f64)> {
-        let array = &array
+        let array: Vec<f64> = array
             .iter()
             .filter_map(|value| {
                 if let Value::Number(num) = value {
@@ -218,14 +214,15 @@ impl CocoJsonParser {
                     None
                 }
             })
-            .collect::<Vec<f64>>();
-        if array.len() == 4 {
-            Ok((array[0], array[1], array[2], array[3]))
-        } else {
-            Err(anyhow!(
+            .collect();
+
+        if array.len() != 4 {
+            return Err(anyhow!(
                 "Expected four valid elements in bbox array, got {}",
                 array.len()
-            ))
+            ));
         }
+
+        Ok((array[0], array[1], array[2], array[3]))
     }
 }
