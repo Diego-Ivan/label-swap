@@ -6,6 +6,7 @@ use crate::{
 };
 use anyhow::anyhow;
 use anyhow::Result;
+use std::path::PathBuf;
 use std::{
     fs::{DirEntry, File, ReadDir},
     io::{BufRead, BufReader},
@@ -60,7 +61,8 @@ impl Yolo5ObbParser {
 }
 
 impl FormatParser for Yolo5ObbParser {
-    fn init(&mut self, path: Box<Path>) -> Result<()> {
+    fn init(&mut self, path: impl Into<PathBuf>) -> Result<()> {
+        let path = path.into();
         let metadata = std::fs::metadata(&path)?;
         if !metadata.is_dir() {
             return Err(anyhow::anyhow!("Expected given path to be a directory"));
@@ -69,7 +71,7 @@ impl FormatParser for Yolo5ObbParser {
         let enumerator = std::fs::read_dir(&path)?;
         self.file_enumerator = Some(enumerator);
 
-        self.source_directory = Some(path);
+        self.source_directory = Some(path.into());
         Ok(())
     }
 

@@ -11,7 +11,7 @@ use crate::models::{annotation::ClassRepresentation, Annotation};
 use anyhow::{anyhow, Result};
 use serde_json::value::Value;
 use std::collections::{HashMap, VecDeque};
-use std::{fs::File, io::BufReader, path::Path};
+use std::{fs::File, io::BufReader, path::{Path, PathBuf}};
 
 pub struct CocoJsonParser {
     category_map: HashMap<i64, String>,
@@ -30,7 +30,8 @@ impl CocoJsonParser {
 }
 
 impl FormatParser for CocoJsonParser {
-    fn init(&mut self, path: Box<Path>) -> Result<()> {
+    fn init(&mut self, path: impl Into<PathBuf>) -> Result<()> {
+        let path = path.into();
         let metadata = std::fs::metadata(&path)?;
         if metadata.file_type().is_dir() {
             return Err(anyhow!(ParserError::WrongFileType(
@@ -209,7 +210,7 @@ impl CocoJsonParser {
             .iter()
             .filter_map(|value| {
                 if let Value::Number(num) = value {
-                    Some(num.as_f64().unwrap())
+                    num.as_f64()
                 } else {
                     None
                 }

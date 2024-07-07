@@ -1,9 +1,9 @@
 use crate::models::Annotation;
 use anyhow::Result;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 pub trait FormatParser {
-    fn init(&mut self, path: Box<Path>) -> Result<()>;
+    fn init(&mut self, path: impl Into<PathBuf>) -> Result<()>;
     fn get_next(&mut self) -> anyhow::Result<Annotation>;
     fn has_next(&mut self) -> bool;
 }

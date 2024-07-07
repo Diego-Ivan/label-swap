@@ -9,8 +9,7 @@ fn test_io() {
     let mut parser = Yolo5ObbParser::new();
     parser
         .init(
-            Path::new("/var/home/diegoivan/Escritorio/annotation-example/labelswap-data/tests/yolo5obb-labels")
-                .into(),
+            Path::new("/var/home/diegoivan/Escritorio/annotation-example/labelswap-data/tests/yolo5obb-labels"),
         )
         .unwrap();
     common_parser::test_annotation(
