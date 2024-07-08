@@ -7,7 +7,7 @@
 
 use super::format_parser::ParserError;
 use super::FormatParser;
-use crate::models::{annotation::ClassRepresentation, Annotation};
+use crate::models::{annotation::ClassRepresentation, Annotation, Image};
 use anyhow::{anyhow, Result};
 use serde_json::value::Value;
 use std::collections::{HashMap, VecDeque};
@@ -15,7 +15,7 @@ use std::{fs::File, io::BufReader, path::{Path, PathBuf}};
 
 pub struct CocoJsonParser {
     category_map: HashMap<i64, String>,
-    image_map: HashMap<i64, String>,
+    image_map: HashMap<i64, PathBuf>,
     annotation_array: VecDeque<Value>,
 }
 
@@ -128,7 +128,7 @@ impl FormatParser for CocoJsonParser {
 
         Ok(Annotation {
             class,
-            image: Some(Path::new(&image).into()),
+            image: Some(Image::new_with_path(image)),
             ..Annotation::from_top_left_corner(x, y, width, height)
         })
     }
@@ -199,7 +199,7 @@ impl CocoJsonParser {
                 _ => return Err(anyhow!("Expected file_name to be a string")),
             };
 
-            self.image_map.insert(id, filename.clone());
+            self.image_map.insert(id, PathBuf::from(filename));
         }
 
         Ok(())

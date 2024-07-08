@@ -1,4 +1,4 @@
-use labelswap_data::models::{annotation::ClassRepresentation, Annotation};
+use labelswap_data::models::{annotation::ClassRepresentation, Annotation, Image};
 use labelswap_data::parser::cocojson_parser::CocoJsonParser;
 use labelswap_data::parser::*;
 use std::path::Path;
@@ -15,7 +15,7 @@ fn test_io() {
         &mut parser,
         vec![
             Annotation {
-                image: Some(Path::new("0001.jpg").into()),
+                image: Some(Image::new_with_path(Path::new("0001.jpg"))),
                 class: ClassRepresentation::Both {
                     id: String::from("2"),
                     name: String::from("helmet"),
@@ -32,7 +32,7 @@ fn test_io() {
                 y4: 2.0 + 85.0,
             },
             Annotation {
-                image: Some(Path::new("0001.jpg").into()),
+                image: Some(Image::new_with_path(Path::new("0001.jpg"))),
                 class: ClassRepresentation::Both {
                     id: String::from("2"),
                     name: String::from("helmet"),

@@ -1,5 +1,7 @@
 use std::path::{Path, PathBuf};
 
+use super::Image;
+
 #[derive(Debug)]
 pub enum ClassRepresentation<S>
 where
@@ -77,7 +79,7 @@ pub struct Annotation {
     pub class: ClassRepresentation<String>,
     pub source_file: Option<PathBuf>,
     pub difficulty: bool,
-    pub image: Option<PathBuf>,
+    pub image: Option<Image>,
 
     pub x1: f64,
     pub x2: f64,

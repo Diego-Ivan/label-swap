@@ -6,12 +6,12 @@
  */
 
 use crate::{
-    models::{Annotation, Format},
+    models::{Annotation, Format, Image},
     resolve_relative_path,
 };
 use anyhow::{anyhow, Result};
 use image::io::Reader as ImageReader;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use super::Transform;
 
@@ -26,23 +26,8 @@ impl Normalize {
         }
         Ok(Self { image_directory })
     }
-}
 
-impl Transform for Normalize {
-    fn apply(
-        &mut self,
-        annotation: &mut Annotation,
-        _source_format: &Format,
-        _target_format: &Format,
-    ) -> Result<()> {
-        let image_path = annotation
-            .image
-            .as_ref()
-            .ok_or(anyhow!("Expected image path in annotation"))?;
-
-        let image_path = resolve_relative_path(&self.image_directory, &image_path)?;
-        let (width, height) = ImageReader::open(&image_path)?.into_dimensions()?;
-
+    fn normalize(annotation: &mut Annotation, width: u32, height: u32) {
         let width = f64::from(width);
         let height = f64::from(height);
 
@@ -55,6 +40,27 @@ impl Transform for Normalize {
         annotation.y2 /= height;
         annotation.y3 /= height;
         annotation.y4 /= height;
+    }
+}
+
+impl Transform for Normalize {
+    fn apply(
+        &mut self,
+        annotation: &mut Annotation,
+        _source_format: &Format,
+        _target_format: &Format,
+    ) -> Result<()> {
+        let mut image = annotation
+            .image
+            .as_mut()
+            .ok_or(anyhow!("Expected image path in annotation"))?;
+
+        let (width, height) = match (image.width, image.height) {
+            (Some(width), Some(height)) => (width, height),
+            _ => read_image_dimensions(&mut image, &self.image_directory)?,
+        };
+
+        Self::normalize(annotation, width, height);
 
         Ok(())
     }
@@ -71,6 +77,21 @@ impl Denormalize {
         }
         Ok(Self { image_directory })
     }
+
+    fn denormalize(annotation: &mut Annotation, image_directory: &Path, width: u32, height: u32) {
+        let width = f64::from(width);
+        let height = f64::from(height);
+
+        annotation.x1 /= width;
+        annotation.x2 /= width;
+        annotation.x3 /= width;
+        annotation.x4 /= width;
+
+        annotation.y1 /= height;
+        annotation.y2 /= height;
+        annotation.y3 /= height;
+        annotation.y4 /= height;
+    }
 }
 
 impl Transform for Denormalize {
@@ -80,27 +101,34 @@ impl Transform for Denormalize {
         _source_format: &Format,
         _target_format: &Format,
     ) -> Result<()> {
-        let image_path = annotation
+        let mut image = annotation
             .image
-            .as_ref()
+            .as_mut()
             .ok_or(anyhow!("Expected image path in annotation"))?;
 
-        let image_path = resolve_relative_path(&self.image_directory, &image_path)?;
-        let (width, height) = ImageReader::open(&image_path)?.into_dimensions()?;
+        let (width, height) = match (image.width, image.height) {
+            (Some(width), Some(height)) => (width, height),
+            _ => read_image_dimensions(&mut image, &self.image_directory)?,
+        };
 
-        let width = f64::from(width);
-        let height = f64::from(height);
-
-        annotation.x1 *= width;
-        annotation.x2 *= width;
-        annotation.x3 *= width;
-        annotation.x4 *= width;
-
-        annotation.y1 *= height;
-        annotation.y2 *= height;
-        annotation.y3 *= height;
-        annotation.y4 *= height;
+        Self::denormalize(annotation, &self.image_directory, width, height);
 
         Ok(())
     }
+}
+
+/// Reads the image dimensions and writes them to the instance
+fn read_image_dimensions(image: &mut Image, image_directory: &Path) -> Result<(u32, u32)> {
+    let image_path = match image.path.as_ref() {
+        Some(path) => path,
+        None => return Err(anyhow!("Expected image path to be Some")),
+    };
+
+    let image_path = resolve_relative_path(image_directory, image_path)?;
+    let (width, height) = ImageReader::open(&image_path)?.into_dimensions()?;
+
+    image.width = Some(width);
+    image.height = Some(height);
+
+    Ok((width, height))
 }
