@@ -9,6 +9,7 @@ pub mod conversion_pipeline;
 pub mod models;
 pub mod parser;
 pub mod transforms;
+pub mod serializer;
 
 pub fn reader_has_data_left<R>(reader: &mut BufReader<R>) -> Result<bool, io::Error>
 where
