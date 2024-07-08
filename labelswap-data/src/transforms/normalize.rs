@@ -50,14 +50,13 @@ impl Transform for Normalize {
         _source_format: &Format,
         _target_format: &Format,
     ) -> Result<()> {
-        let mut image = annotation
-            .image
-            .as_mut()
-            .ok_or(anyhow!("Expected image path in annotation"))?;
+        let image = &mut annotation.image;
 
         let (width, height) = match (image.width, image.height) {
             (Some(width), Some(height)) => (width, height),
-            _ => read_image_dimensions(&mut image, &self.image_directory)?,
+            _ => {
+                read_image_dimensions(image, &self.image_directory)?
+            },
         };
 
         Self::normalize(annotation, width, height);
@@ -78,7 +77,7 @@ impl Denormalize {
         Ok(Self { image_directory })
     }
 
-    fn denormalize(annotation: &mut Annotation, image_directory: &Path, width: u32, height: u32) {
+    fn denormalize(annotation: &mut Annotation, width: u32, height: u32) {
         let width = f64::from(width);
         let height = f64::from(height);
 
@@ -101,17 +100,14 @@ impl Transform for Denormalize {
         _source_format: &Format,
         _target_format: &Format,
     ) -> Result<()> {
-        let mut image = annotation
-            .image
-            .as_mut()
-            .ok_or(anyhow!("Expected image path in annotation"))?;
+        let image = &mut annotation.image;
 
         let (width, height) = match (image.width, image.height) {
             (Some(width), Some(height)) => (width, height),
-            _ => read_image_dimensions(&mut image, &self.image_directory)?,
+            _ => read_image_dimensions(image, &self.image_directory)?,
         };
 
-        Self::denormalize(annotation, &self.image_directory, width, height);
+        Self::denormalize(annotation, width, height);
 
         Ok(())
     }

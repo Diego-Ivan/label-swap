@@ -1,4 +1,4 @@
-use labelswap_data::models::{annotation::ClassRepresentation, Annotation};
+use labelswap_data::models::{annotation::ClassRepresentation, Annotation, Image};
 use labelswap_data::parser::*;
 use std::path::{Path, PathBuf};
 
@@ -19,7 +19,7 @@ fn test_io() {
                 class: ClassRepresentation::ClassName(String::from("small-vehicle")),
                 difficulty: false,
                 source_file: Some(PathBuf::from("/var/home/diegoivan/Escritorio/annotation-example/labelswap-data/tests/yolo5obb-labels/001.txt")),
-                image: None,
+                image: Image::new(),
                 x1: 287.0,
                 y1: 268.0,
                 x2: 282.0,
@@ -33,7 +33,7 @@ fn test_io() {
                 class: ClassRepresentation::ClassName(String::from("large-vehicle")),
                 difficulty: false,
                 source_file: Some(PathBuf::from("/var/home/diegoivan/Escritorio/annotation-example/labelswap-data/tests/yolo5obb-labels/001.txt")),
-                image: None,
+                image: Image::new(),
                 x1: 212.00000000000006,
                 y1: 285.0,
                 x2: 195.00000000000006,
@@ -47,7 +47,7 @@ fn test_io() {
                 class: ClassRepresentation::ClassName(String::from("large-vehicle")),
                 difficulty: false,
                 source_file: Some(PathBuf::from("/var/home/diegoivan/Escritorio/annotation-example/labelswap-data/tests/yolo5obb-labels/001.txt")),
-                image: None,
+                image: Image::new(),
                 x1: 167.0,
                 y1: 151.0,
                 x2: 149.0,
@@ -61,7 +61,7 @@ fn test_io() {
                 class: ClassRepresentation::ClassName(String::from("large-vehicle")),
                 difficulty: false,
                 source_file: Some(PathBuf::from("/var/home/diegoivan/Escritorio/annotation-example/labelswap-data/tests/yolo5obb-labels/002.txt")),
-                image: None,
+                image: Image::new(),
                 x1: 167.0,
                 y1: 151.0,
                 x2: 149.0,

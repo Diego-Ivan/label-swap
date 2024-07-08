@@ -1,6 +1,6 @@
 use crate::models::Annotation;
 use anyhow::Result;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 pub trait FormatParser {
     fn init(&mut self, path: impl Into<PathBuf>) -> Result<()>;

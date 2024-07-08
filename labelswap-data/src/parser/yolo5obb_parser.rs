@@ -2,7 +2,8 @@ use crate::models::Annotation;
 use crate::reader_has_data_left;
 use crate::{
     models::annotation::ClassRepresentation,
-    parser::{format_parser::ParserError, FormatParser},
+    models::Image,
+    parser::FormatParser,
 };
 use anyhow::anyhow;
 use anyhow::Result;
@@ -118,7 +119,7 @@ impl FormatParser for Yolo5ObbParser {
                 Some(i) => i.parse::<i32>().unwrap() != 0,
                 None => false,
             },
-            image: None,
+            image: Image::new(),
         })
     }
 

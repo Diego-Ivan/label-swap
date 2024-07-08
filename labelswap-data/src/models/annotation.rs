@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use super::Image;
 
@@ -79,7 +79,7 @@ pub struct Annotation {
     pub class: ClassRepresentation<String>,
     pub source_file: Option<PathBuf>,
     pub difficulty: bool,
-    pub image: Option<Image>,
+    pub image: Image,
 
     pub x1: f64,
     pub x2: f64,
@@ -114,7 +114,7 @@ impl Annotation {
             class: ClassRepresentation::None,
             source_file: None,
             difficulty: false,
-            image: None,
+            image: Image::new(),
         }
     }
 

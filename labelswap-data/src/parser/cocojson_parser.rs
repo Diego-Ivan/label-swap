@@ -11,7 +11,7 @@ use crate::models::{annotation::ClassRepresentation, Annotation, Image};
 use anyhow::{anyhow, Result};
 use serde_json::value::Value;
 use std::collections::{HashMap, VecDeque};
-use std::{fs::File, io::BufReader, path::{Path, PathBuf}};
+use std::{fs::File, io::BufReader, path::PathBuf};
 
 pub struct CocoJsonParser {
     category_map: HashMap<i64, String>,
@@ -128,7 +128,7 @@ impl FormatParser for CocoJsonParser {
 
         Ok(Annotation {
             class,
-            image: Some(Image::new_with_path(image)),
+            image: Image::new_with_path(image),
             ..Annotation::from_top_left_corner(x, y, width, height)
         })
     }

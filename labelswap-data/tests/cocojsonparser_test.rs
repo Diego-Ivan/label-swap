@@ -15,7 +15,7 @@ fn test_io() {
         &mut parser,
         vec![
             Annotation {
-                image: Some(Image::new_with_path(Path::new("0001.jpg"))),
+                image: Image::new_with_path(Path::new("0001.jpg")),
                 class: ClassRepresentation::Both {
                     id: String::from("2"),
                     name: String::from("helmet"),
@@ -32,7 +32,7 @@ fn test_io() {
                 y4: 2.0 + 85.0,
             },
             Annotation {
-                image: Some(Image::new_with_path(Path::new("0001.jpg"))),
+                image: Image::new_with_path(Path::new("0001.jpg")),
                 class: ClassRepresentation::Both {
                     id: String::from("2"),
                     name: String::from("helmet"),

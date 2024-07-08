@@ -7,7 +7,7 @@
 
 use std::{
     collections::{HashMap, HashSet},
-    path::{Path, PathBuf},
+    path::PathBuf,
 };
 
 use super::Transform;
@@ -47,7 +47,7 @@ impl Transform for LookupImage {
             .ok_or(anyhow!("Expected source file to be Some"))?;
 
         if let Some(image) = self.source_to_image_map.get(annotation_source) {
-            annotation.image.as_mut().unwrap().path = Some(image.clone());
+            annotation.image.path = Some(image.clone());
             return Ok(());
         }
 
@@ -69,8 +69,8 @@ impl Transform for LookupImage {
             Some(file) => {
                 let filename = file.path();
                 self.source_to_image_map
-                    .insert(PathBuf::from(annotation_source), filename);
-                annotation.image.as_mut().unwrap().path = Some(file.path().into());
+                    .insert(PathBuf::from(annotation_source), filename.clone());
+                annotation.image.path = Some(filename);
                 Ok(())
             }
             None => {
