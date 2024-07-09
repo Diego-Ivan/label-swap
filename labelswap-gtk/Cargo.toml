@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 gettext-rs = { version = "0.7", features = ["gettext-system"] }
 gtk = { version = "0.7", package = "gtk4", features = ["v4_10"] }
+labelswap-data = { path = "../labelswap-data" }
 
 [dependencies.adw]
 package = "libadwaita"

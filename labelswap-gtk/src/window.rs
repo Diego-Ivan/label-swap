@@ -24,6 +24,10 @@ use adw::subclass::prelude::*;
 use gtk::{gio, glib};
 
 mod imp {
+    use labelswap_data::models::{format::{ClassFormat, SourceType}, Format};
+
+    use crate::models::FormatObject;
+
     use super::*;
 
     #[derive(Debug, Default, gtk::CompositeTemplate)]
@@ -48,7 +52,24 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for LabelSwapWindow {}
+    impl ObjectImpl for LabelSwapWindow {
+        fn constructed(&self) {
+            self.parent_constructed();
+
+            let formats = [
+                Format {
+                    name: String::from("YOLO v5 Oriented Bounding Boxes"),
+                    id: String::from("yolo5obb"),
+                    file_extension: None,
+                    is_normalized: false,
+                    image_path: labelswap_data::models::format::ImagePath::NoPath,
+                    class_mapping: labelswap_data::models::format::ClassMapping::NoMapping,
+                    class_format: ClassFormat::Name,
+                    source_type: SourceType::SingleFile,
+                }
+            ];
+        }
+    }
     impl WidgetImpl for LabelSwapWindow {}
     impl WindowImpl for LabelSwapWindow {}
     impl ApplicationWindowImpl for LabelSwapWindow {}

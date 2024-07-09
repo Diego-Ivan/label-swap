@@ -9,19 +9,20 @@ use std::collections::HashSet;
 
 use crate::transforms::transform::RequiredTransformations;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum ClassFormat {
     Name,
     Id,
     Both,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum SourceType {
     MultipleFiles,
     SingleFile,
 }
 
+#[derive(Debug)]
 pub enum ClassMapping {
     ContainsMapping,
     NoMapping,
@@ -37,12 +38,13 @@ impl ClassMapping {
     }
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Debug)]
 pub enum ImagePath {
     ContainsPath,
     NoPath,
 }
 
+#[derive(Debug)]
 pub struct Format {
     pub name: String,
     pub id: String,

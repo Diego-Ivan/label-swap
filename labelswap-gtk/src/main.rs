@@ -19,6 +19,7 @@
  */
 
 mod widgets;
+mod models;
 
 mod application;
 mod config;

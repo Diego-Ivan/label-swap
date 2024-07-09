@@ -93,14 +93,13 @@ impl FormatSerializer for Yolo5ObbSerializer {
         Ok(())
     }
 
-    fn finish(&mut self) -> Result<()> {
+    fn finish(self) -> Result<()> {
         let destination = match self.destination.as_ref() {
             Some(destination) => destination,
             None => return Err(anyhow!("Expected destination to be Some")),
         };
 
-
-        for (path, annotations) in self.annotation_map.iter() {
+        for (path, annotations) in self.annotation_map {
             let file_name = match path.file_name() {
                 Some(file_name) => PathBuf::from(file_name),
                 None => {
