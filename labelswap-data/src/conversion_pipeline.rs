@@ -13,16 +13,16 @@ use std::cell::Cell;
 
 use anyhow::{anyhow, Result};
 
-pub struct ConversionPipeline {
+pub struct ConversionPipeline<'a> {
     transforms: Vec<Box<dyn Transform>>,
-    source_format: Format,
-    target_format: Format,
+    source_format: &'a Format,
+    target_format: &'a Format,
     image_directory: Option<PathBuf>,
     mapping: Cell<Option<HashMap<String, String>>>,
 }
 
-impl ConversionPipeline {
-    pub fn new(source_format: Format, target_format: Format) -> Self {
+impl<'a> ConversionPipeline<'a> {
+    pub fn new(source_format: &'a Format, target_format: &'a Format) -> Self {
         Self {
             transforms: Vec::new(),
             source_format,
