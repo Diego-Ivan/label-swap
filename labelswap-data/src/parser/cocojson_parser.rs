@@ -31,8 +31,8 @@ impl CocoJsonParser {
 impl FormatParser for CocoJsonParser {
     fn init(&mut self, path: impl Into<PathBuf>) -> Result<(), ParserError> {
         let path: PathBuf = path.into();
-        let metadata = std::fs::metadata(&path);
-        if metadata.is_ok() {
+        let metadata = std::fs::metadata(&path).unwrap();
+        if metadata.is_dir() {
             return Err(ParserError::WrongSource {
                 expected: SourceType::SingleFile,
                 found: SourceType::MultipleFiles,
@@ -98,7 +98,6 @@ impl FormatParser for CocoJsonParser {
             Some(i) => i,
             None => return Err(ParserError::OutOfElements),
         };
-        let current_item = self.annotation_array.pop_front().unwrap();
 
         let mut map = match current_item {
             Value::Object(map) => map,

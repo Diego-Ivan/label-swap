@@ -1,12 +1,10 @@
+use super::ParserError;
+use crate::models::format::SourceType;
 use crate::models::Annotation;
 use crate::reader_has_data_left;
-use crate::{
-    models::annotation::ClassRepresentation,
-    models::Image,
-    parser::FormatParser,
-};
+use crate::{models::annotation::ClassRepresentation, models::Image, parser::FormatParser};
 use anyhow::anyhow;
-use anyhow::Result;
+use std::io;
 use std::path::PathBuf;
 use std::{
     fs::{DirEntry, File, ReadDir},
@@ -31,21 +29,19 @@ impl Yolo5ObbParser {
         }
     }
 
-    fn look_for_next_entry(&mut self) -> Result<DirEntry> {
+    fn look_for_next_entry(&mut self) -> std::io::Result<DirEntry> {
         let enumerator: &mut ReadDir = self.file_enumerator.as_mut().unwrap();
 
         while let Some(next_entry) = enumerator.next() {
             let next_entry = next_entry?;
             let path = next_entry.path();
-            let extension = path
-                .extension()
-                .ok_or(anyhow!("Expected entry to have a file extension"))?;
+            let extension = path.extension().unwrap();
             if extension == "txt" {
                 return Ok(next_entry);
             }
         }
 
-        Err(anyhow!("Could not find a text file"))
+        Err(io::Error::new(io::ErrorKind::NotFound, "Entry not found"))
     }
 
     fn reader_has_data(&mut self) -> bool {
@@ -62,11 +58,14 @@ impl Yolo5ObbParser {
 }
 
 impl FormatParser for Yolo5ObbParser {
-    fn init(&mut self, path: impl Into<PathBuf>) -> Result<()> {
+    fn init(&mut self, path: impl Into<PathBuf>) -> Result<(), ParserError> {
         let path = path.into();
         let metadata = std::fs::metadata(&path)?;
         if !metadata.is_dir() {
-            return Err(anyhow::anyhow!("Expected given path to be a directory"));
+            return Err(ParserError::WrongSource {
+                expected: SourceType::MultipleFiles,
+                found: SourceType::SingleFile,
+            });
         }
 
         let enumerator = std::fs::read_dir(&path)?;
@@ -76,18 +75,20 @@ impl FormatParser for Yolo5ObbParser {
         Ok(())
     }
 
-    fn get_next(&mut self) -> Result<Annotation> {
+    fn get_next(&mut self) -> Result<Annotation, ParserError> {
         let reader: &mut BufReader<File> = self
             .current_reader
             .as_mut()
-            .ok_or(anyhow!("The stream is closed"))?;
+            .ok_or(ParserError::OutOfElements)?;
 
         let mut line = String::new();
         let _ = reader.read_line(&mut line)?;
 
         let elements: Vec<&str> = line.trim().split(" ").collect();
         if elements.len() < 9 {
-            return Err(anyhow!("Expected at least 9 elements in line {line}"));
+            return Err(ParserError::WrongFormat(format!(
+                "Expected at least 9 elements in line {line}"
+            )));
         }
 
         let coordinates: Vec<f64> = elements[..8]
@@ -95,14 +96,13 @@ impl FormatParser for Yolo5ObbParser {
             .filter_map(|c| c.parse::<f64>().ok())
             .collect();
         if coordinates.len() < 8 {
-            return Err(anyhow!("Expected 4 (x, y) pairs, got {}", coordinates.len()))
+            return Err(ParserError::WrongFormat(format!(
+                "Expected 4 (x, y) pairs, got {}",
+                coordinates.len()
+            )));
         }
 
-        let source_file = self
-            .current_entry
-            .as_ref()
-            .unwrap()
-            .path();
+        let source_file = self.current_entry.as_ref().unwrap().path();
 
         Ok(Annotation {
             x1: coordinates[0],
