@@ -2,6 +2,8 @@ pub mod cocojson_parser;
 pub mod format_parser;
 pub mod yolo5obb_parser;
 
+use std::io;
+
 pub use format_parser::FormatParser;
 pub use yolo5obb_parser::Yolo5ObbParser;
 
@@ -17,6 +19,12 @@ pub enum ParserError {
         expected: SourceType,
         found: SourceType,
     },
-    #[error("Wrong format: {msg}")]
-    WrongFormat { msg: String },
+    #[error("Wrong format: {0}")]
+    WrongFormat(String),
+    #[error("IO Error: {0}")]
+    Io(#[from] io::Error),
+    #[error("Error: {0}")]
+    Other(String),
+    #[error("No more elements to parse")]
+    OutOfElements,
 }

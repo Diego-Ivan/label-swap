@@ -1,17 +1,10 @@
 use crate::models::Annotation;
-use anyhow::Result;
 use std::path::PathBuf;
 
-pub trait FormatParser {
-    fn init(&mut self, path: impl Into<PathBuf>) -> Result<()>;
-    fn get_next(&mut self) -> anyhow::Result<Annotation>;
-    fn has_next(&mut self) -> bool;
-}
+use super::ParserError;
 
-#[derive(thiserror::Error, Debug, Clone)]
-pub enum ParserError {
-    #[error("Wrong file type")]
-    WrongFileType(String),
-    #[error("Wrong Format")]
-    WrongFormat(String),
+pub trait FormatParser {
+    fn init(&mut self, path: impl Into<PathBuf>) -> Result<(), ParserError>;
+    fn get_next(&mut self) -> Result<Annotation, ParserError>;
+    fn has_next(&mut self) -> bool;
 }
