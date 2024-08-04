@@ -5,7 +5,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-use std::collections::HashSet;
+use std::{
+    collections::HashSet,
+    fmt::{Display, Write},
+};
 
 use crate::transforms::transform::RequiredTransformations;
 
@@ -20,6 +23,15 @@ pub enum ClassFormat {
 pub enum SourceType {
     MultipleFiles,
     SingleFile,
+}
+impl Display for SourceType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let format = match self {
+            Self::MultipleFiles => "Multiple Files",
+            Self::SingleFile => "Single file",
+        };
+        f.write_str(format)
+    }
 }
 
 #[derive(Debug)]
