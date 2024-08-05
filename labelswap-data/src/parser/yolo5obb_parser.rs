@@ -1,7 +1,7 @@
+use super::reader_has_data_left;
 use super::ParserError;
 use crate::models::format::SourceType;
 use crate::models::Annotation;
-use crate::reader_has_data_left;
 use crate::{models::annotation::ClassRepresentation, models::Image, parser::FormatParser};
 use anyhow::anyhow;
 use std::io;
@@ -47,13 +47,10 @@ impl Yolo5ObbParser {
     fn reader_has_data(&mut self) -> bool {
         let reader = self.current_reader.as_mut();
 
-        if let Some(reader) = reader {
-            let has_data = reader_has_data_left(reader);
-            if has_data.is_ok() && has_data.unwrap() {
-                return true;
-            }
+        match reader {
+            Some(reader) => reader_has_data_left(reader),
+            None => false,
         }
-        return false;
     }
 }
 
@@ -130,7 +127,7 @@ impl FormatParser for Yolo5ObbParser {
 
         let reader = self.current_reader.as_mut();
 
-        if reader.is_none() || !reader_has_data_left(reader.unwrap()).unwrap() {
+        if reader.is_none() || !reader_has_data_left(reader.unwrap()) {
             self.current_entry = self.look_for_next_entry().ok();
             if self.current_entry.is_none() {
                 return false;
