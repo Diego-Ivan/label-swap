@@ -5,6 +5,7 @@ mod yolo5txt_parser;
 
 use std::io::{BufRead, BufReader, Read};
 
+pub use cocojson_parser::CocoJsonParser;
 pub use format_parser::FormatParser;
 pub use yolo5obb_parser::Yolo5ObbParser;
 pub use yolo5txt_parser::Yolo5TxtParser;

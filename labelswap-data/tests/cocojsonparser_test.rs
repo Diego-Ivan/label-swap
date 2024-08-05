@@ -1,6 +1,5 @@
 use labelswap_data::models::{annotation::ClassRepresentation, Annotation, Image};
-use labelswap_data::parser::cocojson_parser::CocoJsonParser;
-use labelswap_data::parser::*;
+use labelswap_data::parser::{CocoJsonParser, FormatParser};
 use std::path::Path;
 
 mod common_parser;
