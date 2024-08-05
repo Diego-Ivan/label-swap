@@ -1,11 +1,13 @@
-pub mod cocojson_parser;
-pub mod format_parser;
-pub mod yolo5obb_parser;
+mod cocojson_parser;
+mod format_parser;
+mod yolo5obb_parser;
+mod yolo5txt_parser;
 
-use std::io;
+use std::io::{BufRead, BufReader, Read};
 
 pub use format_parser::FormatParser;
 pub use yolo5obb_parser::Yolo5ObbParser;
+pub use yolo5txt_parser::Yolo5TxtParser;
 
 use crate::models::format::SourceType;
 use thiserror::Error;
@@ -22,9 +24,19 @@ pub enum ParserError {
     #[error("Wrong format: {0}")]
     WrongFormat(String),
     #[error("IO Error: {0}")]
-    Io(#[from] io::Error),
+    Io(#[from] std::io::Error),
     #[error("Error: {0}")]
     Other(String),
     #[error("No more elements to parse")]
     OutOfElements,
+}
+
+fn reader_has_data_left<R>(reader: &mut BufReader<R>) -> bool
+where
+    R: ?Sized + Read,
+{
+    match reader.fill_buf().map(|b| !b.is_empty()) {
+        Ok(result) => result,
+        Err(_) => false,
+    }
 }
