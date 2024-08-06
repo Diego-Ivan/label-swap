@@ -5,15 +5,28 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-use std::{fs::File, path::PathBuf};
+use std::{fs:: File, path::PathBuf, cell::Cell};
 
-use crate::models::format::SourceType;
+use crate::models::{Annotation, Image, annotation::ClassRepresentation, format::SourceType};
 
 use super::{FormatParser, ParserError};
 
 pub struct TfObjectDetectionParser {
-    reader: Option<csv::StringRecordsIntoIter<File>>,
+    reader: Option<csv::DeserializeRecordsIntoIter<File, Record>>,
+    next_item: Cell<Option<Record>>,
     source_file: PathBuf,
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct Record {
+    filename: String,
+    width: u32,
+    height: u32,
+    class: String,
+    xmin: f64,
+    ymin: f64,
+    xmax: f64,
+    ymax: f64,
 }
 
 impl TfObjectDetectionParser {
@@ -21,6 +34,7 @@ impl TfObjectDetectionParser {
         Self {
             reader: None,
             source_file: PathBuf::new(),
+            next_item: Cell::new(None),
         }
     }
 }
@@ -37,7 +51,7 @@ impl FormatParser for TfObjectDetectionParser {
         self.source_file.push(path);
 
         self.reader = match csv::Reader::from_path(&self.source_file) {
-            Ok(reader) => Some(reader.into_records()),
+            Ok(reader) => Some(reader.into_deserialize()),
             Err(e) => match e.into_kind() {
                 csv::ErrorKind::Io(io) => return Err(ParserError::Io(io)),
                 _ => {
@@ -52,14 +66,29 @@ impl FormatParser for TfObjectDetectionParser {
     }
 
     fn get_next(&mut self) -> Result<crate::models::Annotation, super::ParserError> {
-        let reader = self.reader.as_mut().ok_or(ParserError::OutOfElements);
-        todo!()
+        let next = self.next_item.take().ok_or(ParserError::OutOfElements)?;
+        Ok(Annotation {
+            image: Image {
+                height: Some(next.height),
+                width: Some(next.width),
+                path: Some(PathBuf::from(next.filename)),
+            },
+            class: ClassRepresentation::ClassName(next.class),
+            source_file: Some(self.source_file.clone()),
+            difficulty: false,
+            ..Annotation::from_min_max(next.xmin, next.xmax, next.ymin, next.ymax)
+        })
     }
 
     fn has_next(&mut self) -> bool {
-        match self.reader.as_ref() {
-            Some(reader) => reader.is_done(),
-            None => false,
-        }
+        let iter = match self.reader.as_mut() {
+            Some(iter) => iter,
+            None => return false,
+        };
+
+        let next_item = iter.find_map(|s| s.ok());
+        let is_some = next_item.is_some();
+        self.next_item.set(next_item);
+        is_some
     }
 }
