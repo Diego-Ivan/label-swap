@@ -6,7 +6,8 @@ mod common_parser;
 #[test]
 fn test_io() {
     let mut parser = CocoJsonParser::new();
-    if let Err(e) = parser.init(Path::new("/var/home/diegoivan/Escritorio/annotation-example/labelswap-data/tests/cocojson-labels/coco.json")) {
+    let test_path = common_parser::resolve_test_path("tests/cocojson-labels/coco.json");
+    if let Err(e) = parser.init(&test_path) {
         panic!("An error ocurred trying to init Coco JSON: {e}");
     }
 

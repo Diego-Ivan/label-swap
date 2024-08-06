@@ -7,7 +7,7 @@ mod common_parser;
 #[test]
 fn test_io() {
     let mut parser = TfObjectDetectionParser::new();
-    let source_file = PathBuf::from("/home/diegoivan/Proyectos/label-swap/labelswap-data/tests/tfcsv-labels/tensorflow.csv");
+    let source_file = common_parser::resolve_test_path("tests/tfcsv-labels/tensorflow.csv");
 
     if let Err(e) = parser.init(&source_file) {
         panic!("An error ocurred trying to init TfObjectDetectionParser: {e}");
