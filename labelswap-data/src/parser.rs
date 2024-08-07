@@ -4,6 +4,7 @@ mod tfobjectdetection;
 mod yolo5obb_parser;
 mod yolo5txt_parser;
 mod yolodarknet_parser;
+mod yolo8obb_parser;
 
 use std::io::{BufRead, BufReader, Read};
 
@@ -13,6 +14,7 @@ pub use tfobjectdetection::TfObjectDetectionParser;
 pub use yolo5obb_parser::Yolo5ObbParser;
 pub use yolo5txt_parser::Yolo5TxtParser;
 pub use yolodarknet_parser::YoloDarknetParser;
+pub use yolo8obb_parser::Yolo8ObbParser;
 
 use crate::models::format::SourceType;
 use thiserror::Error;
