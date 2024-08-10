@@ -6,10 +6,9 @@
  */
 
 use std::{collections::HashMap, fs::File, io::Write, path::{Path, PathBuf}};
-use anyhow::{anyhow, Result};
 use crate::models::{annotation::ClassRepresentation, Annotation};
 
-use super::FormatSerializer;
+use super::{FormatSerializer, SerializerError, SerializerResult};
 
 pub struct Yolo5ObbSerializer {
     destination: Option<PathBuf>,
@@ -24,14 +23,16 @@ impl Yolo5ObbSerializer {
         } 
     }
 
-    fn write_to_file(path: &Path, annotations: &[Annotation]) -> Result<()> {
+    fn write_to_file(path: &Path, annotations: &[Annotation]) -> SerializerResult<()> {
         let mut stream = File::open(path)?;
 
         for annotation in annotations {
             let class = match annotation.class.as_ref() {
                 ClassRepresentation::ClassName(name) => name,
                 ClassRepresentation::Both { name,..} => name,
-                _ => return Err(anyhow!("Expected class name in class representation")),
+                _ => return Err(SerializerError::WrongClassRepresentation(
+                    format!("Expected class representation to contain name")
+                ))
             };
 
             let difficulty = if annotation.difficulty {
@@ -59,15 +60,18 @@ impl Yolo5ObbSerializer {
 }
 
 impl FormatSerializer for Yolo5ObbSerializer {
-    fn init(&mut self, path: impl Into<PathBuf>) -> Result<()> {
+    fn init(&mut self, path: impl Into<PathBuf>) -> SerializerResult<()> {
         let path: PathBuf = path.into();
 
         if !path.is_dir() {
-            return Err(anyhow!("Expected {:?} to be a directory", path));
+            return Err(SerializerError::WrongDestination {
+                expected: crate::models::format::SourceType::MultipleFiles,
+                found: crate::models::format::SourceType::SingleFile
+            });
         }
 
         if !path.exists() {
-            return Err(anyhow!("{:?} does not exists", path));
+            std::fs::create_dir_all(&path);
         }
 
         self.destination = Some(path);
@@ -75,10 +79,10 @@ impl FormatSerializer for Yolo5ObbSerializer {
         Ok(())
     }
 
-    fn push(&mut self, annotation: Annotation) -> Result<()> {
+    fn push(&mut self, annotation: Annotation) -> SerializerResult<()> {
         let path = match annotation.source_file.as_ref() {
             Some(path) => path,
-            None => return Err(anyhow!("Expected source file in annotation"))
+            None => return Err(SerializerError::MissingSourceFile),
         };
 
         // We won't use .entry here as it would require making a copy of the PathBuf
@@ -93,11 +97,9 @@ impl FormatSerializer for Yolo5ObbSerializer {
         Ok(())
     }
 
-    fn finish(self) -> Result<()> {
-        let destination = match self.destination.as_ref() {
-            Some(destination) => destination,
-            None => return Err(anyhow!("Expected destination to be Some")),
-        };
+    fn finish(self) -> SerializerResult<()> {
+        // TODO: Remove unwrap
+        let destination = self.destination.as_ref().unwrap();
 
         for (path, annotations) in self.annotation_map {
             let file_name = match path.file_name() {
@@ -122,3 +124,4 @@ impl FormatSerializer for Yolo5ObbSerializer {
         Ok(())
     }
 }
+

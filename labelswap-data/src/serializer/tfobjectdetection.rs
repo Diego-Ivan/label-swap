@@ -1,17 +1,17 @@
-use super::{FormatSerializer}
+use super::{FormatSerializer, SerializerResult};
 
 pub struct TfObjectDetectionSerializer {}
 
 impl FormatSerializer for TfObjectDetectionSerializer {
-    fn init(&mut self, path: impl Into<std::path::PathBuf>) -> anyhow::Result<()> {
+    fn init(&mut self, path: impl Into<std::path::PathBuf>) -> SerializerResult<()> {
         todo!()
     }
 
-    fn push(&mut self, annotation: crate::models::Annotation) -> anyhow::Result<()> {
+    fn push(&mut self, annotation: crate::models::Annotation) -> SerializerResult<()> {
         todo!()
     }
 
-    fn finish(self) -> anyhow::Result<()> {
+    fn finish(self) -> SerializerResult<()> {
         todo!()
     }
 }

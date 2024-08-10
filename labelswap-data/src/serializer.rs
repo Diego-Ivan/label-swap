@@ -10,15 +10,18 @@ use crate::models::{annotation, format};
 
 #[derive(thiserror::Error, Debug)]
 pub enum SerializerError {
-    #[error("Class Representation {0?} is not supported")]
-    WrongClassRepresentation(annotation::ClassRepresentation<String>);
+    #[error("Class Representation {0} is not supported")]
+    WrongClassRepresentation(String),
     #[error("Wrong destination, expected {expected}, but got {found}")]
     WrongDestination {
         expected: format::SourceType,
         found: format::SourceType,
     },
+    #[error("An annotation is missing a source file")]
+    MissingSourceFile,
     #[error("IO Error: {0}")]
     Io(#[from] std::io::Error),
 }
 
 pub type SerializerResult<T> = Result<T, SerializerError>;
+
