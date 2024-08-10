@@ -142,4 +142,32 @@ impl Annotation {
     pub fn from_min_max(x_min: f64, x_max: f64, y_min: f64, y_max: f64) -> Annotation {
         Self::new(x_min, x_max, x_max, x_min, y_min, y_min, y_max, y_max)
     }
+
+    pub fn get_xmin(&self) -> f64 {
+        *[self.x1, self.x2, self.x3, self.x4]
+            .iter()
+            .min_by(|a, b| a.partial_cmp(b).unwrap())
+            .unwrap()
+    }
+
+    pub fn get_xmax(&self) -> f64 {
+        *[self.x1, self.x2, self.x3, self.x4]
+            .iter()
+            .max_by(|a, b| a.partial_cmp(b).unwrap())
+            .unwrap()
+    }
+
+    pub fn get_ymin(&self) -> f64 {
+        *[self.y1, self.y2, self.y3, self.y4]
+            .iter()
+            .min_by(|a, b| a.partial_cmp(b).unwrap())
+            .unwrap()
+    }
+
+    pub fn get_ymax(&self) -> f64 {
+        *[self.y1, self.y2, self.y3, self.y4]
+            .iter()
+            .max_by(|a, b| a.partial_cmp(b).unwrap())
+            .unwrap()
+    }
 }
