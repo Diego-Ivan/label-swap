@@ -12,7 +12,7 @@ use std::io::{BufReader, BufRead};
 
 pub struct Yolo8ObbParser {
     source_directory: PathBuf,
-    current_reader: Option<BufReader<std::fs::File>>
+    current_reader: Option<BufReader<std::fs::File>>,
     file_enumerator: Option<std::fs::ReadDir>,
     current_entry: Option<std::fs::DirEntry>,
 }
