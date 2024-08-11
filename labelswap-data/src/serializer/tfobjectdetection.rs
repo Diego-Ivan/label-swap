@@ -86,7 +86,7 @@ impl FormatSerializer for TfObjectDetectionSerializer {
         Ok(())
     }
 
-    fn finish(self) -> SerializerResult<()> {
+    fn finish(mut self) -> SerializerResult<()> {
         let writer = self.writer.as_mut().ok_or(SerializerError::StreamClosed)?;
         writer.flush()?;
 

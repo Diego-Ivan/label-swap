@@ -72,6 +72,7 @@ impl FormatParser for TfObjectDetectionParser {
                 height: Some(next.height),
                 width: Some(next.width),
                 path: Some(PathBuf::from(next.filename)),
+                id: None,
             },
             class: ClassRepresentation::ClassName(next.class),
             source_file: Some(self.source_file.clone()),
