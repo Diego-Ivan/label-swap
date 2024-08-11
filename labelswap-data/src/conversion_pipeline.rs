@@ -5,11 +5,11 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-use crate::transforms::*;
 use crate::models::Format;
+use crate::transforms::*;
+use std::cell::Cell;
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::cell::Cell;
 
 use anyhow::{anyhow, Result};
 
@@ -56,16 +56,16 @@ impl<'a> ConversionPipeline<'a> {
                 Some(image_directory) => {
                     let denorm = Denormalize::new(PathBuf::from(image_directory))?;
                     self.transforms.push(Box::new(denorm));
-                },
-                None => return Err(anyhow!("Expected image directory to be Some"))
+                }
+                None => return Err(anyhow!("Expected image directory to be Some")),
             }
         } else if transformations.contains(&RequiredTransformations::Normalize) {
             match self.image_directory.as_ref() {
                 Some(image_directory) => {
                     let norm = Normalize::new(PathBuf::from(image_directory))?;
                     self.transforms.push(Box::new(norm));
-                },
-                None => return Err(anyhow!("Expected image directory to be Some"))
+                }
+                None => return Err(anyhow!("Expected image directory to be Some")),
             }
         }
 
@@ -75,16 +75,18 @@ impl<'a> ConversionPipeline<'a> {
                     let lookup = LookupImage::new(PathBuf::from(image_directory))?;
                     self.transforms.push(Box::new(lookup));
                 }
-                None => return Err(anyhow!("Expected image directory to be Some"))
+                None => return Err(anyhow!("Expected image directory to be Some")),
             }
         }
 
-        if transformations.contains(&RequiredTransformations::MapToId) || transformations.contains(&RequiredTransformations::MapToName) {
+        if transformations.contains(&RequiredTransformations::MapToId)
+            || transformations.contains(&RequiredTransformations::MapToName)
+        {
             match self.mapping.take() {
                 Some(map) => {
                     let map = ClassMapping::new(map);
                     self.transforms.push(Box::new(map));
-                },
+                }
                 None => return Err(anyhow!("Expected mapping in the transformations")),
             }
         }
