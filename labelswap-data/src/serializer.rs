@@ -1,10 +1,12 @@
 mod format_serializer;
 mod yolo5obb_serializer;
 mod tfobjectdetection;
+mod cocojson;
 
 pub use format_serializer::FormatSerializer;
 pub use yolo5obb_serializer::Yolo5ObbSerializer;
 pub use tfobjectdetection::TfObjectDetectionSerializer;
+pub use cocojson::CocoJsonSerializer;
 
 use crate::models::{annotation, format};
 
@@ -25,8 +27,10 @@ pub enum SerializerError {
     MissingClassName,
     #[error("Expected the annotation to contain a class ID")]
     MissingClassID,
-    #[error("Image is missing {}")]
+    #[error("Image is missing {0}")]
     MissingImageDimensions(String),
+    #[error("This image does not contain an id")]
+    MissingImageId,
     #[error("IO Error: {0}")]
     Io(#[from] std::io::Error),
     #[error("The expected the destination to have the .{expected} extension, but got .{found}")]
