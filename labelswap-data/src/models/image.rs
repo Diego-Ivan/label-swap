@@ -25,6 +25,7 @@ pub struct Image {
     /// The path does not have to be canonical, as it can be looked up
     /// using the conversion pipeline.
     pub path: Option<PathBuf>,
+    pub id: Option<u32>,
 }
 
 impl Image {
@@ -33,6 +34,7 @@ impl Image {
             width: None,
             height: None,
             path: None,
+            id: None,
         }
     }
 
@@ -41,6 +43,7 @@ impl Image {
             width: None,
             height: None,
             path: None,
+            id: None
         }
     }
 
@@ -49,6 +52,7 @@ impl Image {
             path: None,
             width: Some(width),
             height: Some(height),
+            id: None,
         }
     }
 
@@ -57,6 +61,7 @@ impl Image {
             path: Some(path.into()),
             width: None,
             height: None,
+            id: None,
         }
     }
 }
