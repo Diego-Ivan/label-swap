@@ -5,9 +5,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-use std::{fs:: File, path::PathBuf, cell::Cell};
+use std::{cell::Cell, fs::File, path::PathBuf};
 
-use crate::models::{Annotation, Image, annotation::ClassRepresentation, format::SourceType};
+use crate::models::{annotation::ClassRepresentation, format::SourceType, Annotation, Image};
 
 use super::{FormatParser, ParserError};
 

@@ -1,11 +1,11 @@
-use super::{FormatSerializer, SerializerResult, SerializerError};
-use crate::models::{Annotation, format::SourceType, annotation::ClassRepresentation};
+use super::{FormatSerializer, SerializerError, SerializerResult};
+use crate::models::{annotation::ClassRepresentation, format::SourceType, Annotation};
 
 use std::path::PathBuf;
 
 pub struct TfObjectDetectionSerializer {
     destination: PathBuf,
-    writer: Option<csv::Writer<std::fs::File>>
+    writer: Option<csv::Writer<std::fs::File>>,
 }
 
 #[derive(Debug, serde::Serialize)]
@@ -28,7 +28,7 @@ impl FormatSerializer for TfObjectDetectionSerializer {
             return Err(SerializerError::WrongDestination {
                 expected: SourceType::SingleFile,
                 found: SourceType::MultipleFiles,
-            })
+            });
         }
 
         match path.extension() {
@@ -36,8 +36,8 @@ impl FormatSerializer for TfObjectDetectionSerializer {
                 if extension != "csv" {
                     return Err(SerializerError::WrongExtension {
                         expected: String::from("csv"),
-                        found: extension.to_string_lossy().to_string()
-                    })
+                        found: extension.to_string_lossy().to_string(),
+                    });
                 }
             }
             None => {
@@ -46,7 +46,9 @@ impl FormatSerializer for TfObjectDetectionSerializer {
         };
 
         let mut writer = csv::Writer::from_path(&path)?;
-        writer.write_record(&["filename", "width", "height", "class", "xmin", "ymin", "xmax", "xmin"])?;
+        writer.write_record(&[
+            "filename", "width", "height", "class", "xmin", "ymin", "xmax", "xmin",
+        ])?;
         self.writer = Some(writer);
         self.destination.push(path);
         Ok(())
@@ -54,24 +56,36 @@ impl FormatSerializer for TfObjectDetectionSerializer {
 
     fn push(&mut self, annotation: Annotation) -> SerializerResult<()> {
         let writer = self.writer.as_mut().ok_or(SerializerError::StreamClosed)?;
-        let image_path = annotation.image.path.as_ref().ok_or(SerializerError::MissingImagePath)?;
+        let image_path = annotation
+            .image
+            .path
+            .as_ref()
+            .ok_or(SerializerError::MissingImagePath)?;
         let class = match annotation.class.as_ref() {
             ClassRepresentation::ClassName(name) => name,
             ClassRepresentation::Both { name, .. } => name,
-            _ => return Err(SerializerError::MissingClassName)
+            _ => return Err(SerializerError::MissingClassName),
         };
 
         let width = annotation
             .image
             .width
-            .ok_or(SerializerError::MissingImageDimensions(String::from("Width")))?;
+            .ok_or(SerializerError::MissingImageDimensions(String::from(
+                "Width",
+            )))?;
         let height = annotation
             .image
             .height
-            .ok_or(SerializerError::MissingImageDimensions(String::from("Width")))?;
+            .ok_or(SerializerError::MissingImageDimensions(String::from(
+                "Width",
+            )))?;
 
         let tf_record = Record {
-            filename: image_path.file_name().unwrap().to_string_lossy().to_string(),
+            filename: image_path
+                .file_name()
+                .unwrap()
+                .to_string_lossy()
+                .to_string(),
             class: class.clone(),
             width,
             height,

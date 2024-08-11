@@ -5,8 +5,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-use std::{collections::HashMap, fs::File, io::Write, path::{Path, PathBuf}};
 use crate::models::{annotation::ClassRepresentation, Annotation};
+use std::{
+    collections::HashMap,
+    fs::File,
+    io::Write,
+    path::{Path, PathBuf},
+};
 
 use super::{FormatSerializer, SerializerError, SerializerResult};
 
@@ -20,7 +25,7 @@ impl Yolo5ObbSerializer {
         Self {
             destination: None,
             annotation_map: HashMap::new(),
-        } 
+        }
     }
 
     fn write_to_file(path: &Path, annotations: &[Annotation]) -> SerializerResult<()> {
@@ -29,18 +34,17 @@ impl Yolo5ObbSerializer {
         for annotation in annotations {
             let class = match annotation.class.as_ref() {
                 ClassRepresentation::ClassName(name) => name,
-                ClassRepresentation::Both { name,..} => name,
-                _ => return Err(SerializerError::WrongClassRepresentation(
-                    format!("Expected class representation to contain name")
-                ))
+                ClassRepresentation::Both { name, .. } => name,
+                _ => {
+                    return Err(SerializerError::WrongClassRepresentation(format!(
+                        "Expected class representation to contain name"
+                    )))
+                }
             };
 
-            let difficulty = if annotation.difficulty {
-                1
-            } else {
-                0
-            };
-            let format = format!("{} {} {} {} {} {} {} {} {} {}",
+            let difficulty = if annotation.difficulty { 1 } else { 0 };
+            let format = format!(
+                "{} {} {} {} {} {} {} {} {} {}",
                 annotation.x1,
                 annotation.y1,
                 annotation.x2,
@@ -66,7 +70,7 @@ impl FormatSerializer for Yolo5ObbSerializer {
         if !path.is_dir() {
             return Err(SerializerError::WrongDestination {
                 expected: crate::models::format::SourceType::MultipleFiles,
-                found: crate::models::format::SourceType::SingleFile
+                found: crate::models::format::SourceType::SingleFile,
             });
         }
 
@@ -124,4 +128,3 @@ impl FormatSerializer for Yolo5ObbSerializer {
         Ok(())
     }
 }
-

@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-use std::path::PathBuf;
 use crate::models::Annotation;
+use std::path::PathBuf;
 
 use super::SerializerResult;
 

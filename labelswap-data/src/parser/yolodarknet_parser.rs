@@ -5,12 +5,12 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-use super::{ParserError, FormatParser};
-use std::path::PathBuf;
-use crate::models::{Annotation, format::SourceType, annotation::ClassRepresentation, Image};
+use super::{FormatParser, ParserError};
+use crate::models::{annotation::ClassRepresentation, format::SourceType, Annotation, Image};
+use std::fs::{DirEntry, ReadDir};
 use std::io;
 use std::io::{BufRead, BufReader};
-use std::fs::{ReadDir, DirEntry};
+use std::path::PathBuf;
 
 pub struct YoloDarknetParser {
     source_directory: PathBuf,
@@ -32,25 +32,30 @@ impl YoloDarknetParser {
     }
 
     fn parse_class_map(&mut self) -> Result<(), io::Error> {
-        let file = std::fs::read_dir(&self.source_directory)?
-            .find_map(|f| {
-                match f {
-                    Ok(f) => {
-                        if f.file_name() == "darknet.labels" {
-                            return Some(f);
-                        }
-                        None
-                    }
-                    Err(_) => None
+        let file = std::fs::read_dir(&self.source_directory)?.find_map(|f| match f {
+            Ok(f) => {
+                if f.file_name() == "darknet.labels" {
+                    return Some(f);
                 }
-            });
+                None
+            }
+            Err(_) => None,
+        });
         let file = match file {
             Some(file) => file,
-            None => return Err(io::Error::new(io::ErrorKind::NotFound, "darknet.labels file was not found")),
+            None => {
+                return Err(io::Error::new(
+                    io::ErrorKind::NotFound,
+                    "darknet.labels file was not found",
+                ))
+            }
         };
 
         if !file.metadata()?.is_file() {
-            return Err(io::Error::new(io::ErrorKind::NotFound, "darknet.labels is expected to be a regular file"));
+            return Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                "darknet.labels is expected to be a regular file",
+            ));
         }
 
         let file = std::fs::File::open(file.path())?;
@@ -67,7 +72,7 @@ impl YoloDarknetParser {
 impl FormatParser for YoloDarknetParser {
     fn init(&mut self, path: impl Into<std::path::PathBuf>) -> Result<(), ParserError> {
         let path: PathBuf = path.into();
-        if !path.metadata().unwrap().is_dir () {
+        if !path.metadata().unwrap().is_dir() {
             return Err(ParserError::WrongSource {
                 expected: SourceType::MultipleFiles,
                 found: SourceType::SingleFile,
@@ -82,16 +87,23 @@ impl FormatParser for YoloDarknetParser {
     }
 
     fn get_next(&mut self) -> Result<crate::models::Annotation, ParserError> {
-        let reader = self.current_reader.as_mut().ok_or(ParserError::OutOfElements)?;
-        let current_entry = self.current_entry.as_ref().ok_or(ParserError::OutOfElements)?;
+        let reader = self
+            .current_reader
+            .as_mut()
+            .ok_or(ParserError::OutOfElements)?;
+        let current_entry = self
+            .current_entry
+            .as_ref()
+            .ok_or(ParserError::OutOfElements)?;
         let mut line = String::new();
         reader.read_line(&mut line)?;
 
         let elements: Vec<&str> = line.split(' ').collect();
         if elements.len() != 5 {
-            return Err(ParserError::WrongFormat(
-                format!("Expected 5 elements in line '{line}', but got {}", elements.len())
-            ));
+            return Err(ParserError::WrongFormat(format!(
+                "Expected 5 elements in line '{line}', but got {}",
+                elements.len()
+            )));
         }
 
         let class_id: usize = elements[0]
@@ -101,9 +113,9 @@ impl FormatParser for YoloDarknetParser {
         // Indexing the class map to get the class name
         let class_name = match self.class_map.get(class_id) {
             Some(class_name) => class_name.clone(),
-            None => return Err(ParserError::WrongFormat(
-                format!("Class id {class_id} does not have a corresponding class name in darknet.labels")
-            )),
+            None => return Err(ParserError::WrongFormat(format!(
+                "Class id {class_id} does not have a corresponding class name in darknet.labels"
+            ))),
         };
 
         let coordinates: Vec<f64> = elements[1..]
@@ -112,9 +124,10 @@ impl FormatParser for YoloDarknetParser {
             .collect();
 
         if coordinates.len() != 4 {
-            return Err(ParserError::WrongFormat(
-                format!("Expected 4 coordinates in line '{line}', but got {}", coordinates.len())
-            ));
+            return Err(ParserError::WrongFormat(format!(
+                "Expected 4 coordinates in line '{line}', but got {}",
+                coordinates.len()
+            )));
         }
 
         Ok(Annotation {
@@ -125,7 +138,12 @@ impl FormatParser for YoloDarknetParser {
             },
             image: Image::empty(),
             difficulty: false,
-            ..Annotation::from_centers(coordinates[0], coordinates[1], coordinates[2], coordinates[3])
+            ..Annotation::from_centers(
+                coordinates[0],
+                coordinates[1],
+                coordinates[2],
+                coordinates[3],
+            )
         })
     }
 

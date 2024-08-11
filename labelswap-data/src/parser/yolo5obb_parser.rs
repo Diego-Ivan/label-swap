@@ -3,7 +3,6 @@ use super::ParserError;
 use crate::models::format::SourceType;
 use crate::models::Annotation;
 use crate::{models::annotation::ClassRepresentation, models::Image, parser::FormatParser};
-use anyhow::anyhow;
 use std::io;
 use std::path::PathBuf;
 use std::{

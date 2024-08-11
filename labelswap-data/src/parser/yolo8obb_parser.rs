@@ -5,10 +5,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-use super::{ParserError, FormatParser};
-use crate::models::{annotation::ClassRepresentation, Annotation, Image, format::SourceType};
+use super::{FormatParser, ParserError};
+use crate::models::{annotation::ClassRepresentation, format::SourceType, Annotation, Image};
+use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
-use std::io::{BufReader, BufRead};
 
 pub struct Yolo8ObbParser {
     source_directory: PathBuf,
@@ -29,12 +29,12 @@ impl FormatParser for Yolo8ObbParser {
         }
 
         self.source_directory = path;
-        self.file_enumerator = Some(std::fs::read_dir (&self.source_directory)?);
+        self.file_enumerator = Some(std::fs::read_dir(&self.source_directory)?);
         todo!()
     }
 
     fn get_next(&mut self) -> Result<Annotation, ParserError> {
-        let mut reader = match self.current_reader.as_mut() {
+        let reader = match self.current_reader.as_mut() {
             Some(reader) => reader,
             None => return Err(ParserError::OutOfElements),
         };
@@ -49,9 +49,10 @@ impl FormatParser for Yolo8ObbParser {
 
         let tokens: Vec<&str> = line.split(' ').collect();
         if tokens.len() != 9 {
-            return Err(ParserError::WrongFormat(
-                format!("Expected 9 elements in line '{line}, but got {}", tokens.len())
-            ));
+            return Err(ParserError::WrongFormat(format!(
+                "Expected 9 elements in line '{line}, but got {}",
+                tokens.len()
+            )));
         }
 
         let class_index: usize = match tokens[0].parse() {
@@ -65,9 +66,10 @@ impl FormatParser for Yolo8ObbParser {
             .collect();
 
         if coordinates.len() != 8 {
-            return Err(ParserError::WrongFormat(
-                format!("Expected 8 coordinates in line '{line}, but got {}.", tokens.len())
-            ));
+            return Err(ParserError::WrongFormat(format!(
+                "Expected 8 coordinates in line '{line}, but got {}.",
+                tokens.len()
+            )));
         }
 
         Ok(Annotation {
