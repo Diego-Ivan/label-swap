@@ -50,9 +50,33 @@ impl ClassRepresentation<String> {
     pub fn to_both(self, missing_value: String) -> ClassRepresentation<String> {
         match self {
             Self::None => Self::None,
-            Self::ClassName(name) => Self::Both { name, id: missing_value },
-            Self::ClassId(id) => Self::Both{ id, name: missing_value},
+            Self::ClassName(name) => Self::Both {
+                name,
+                id: missing_value,
+            },
+            Self::ClassId(id) => Self::Both {
+                id,
+                name: missing_value,
+            },
             Self::Both { name, id } => Self::Both { name, id },
+        }
+    }
+
+    pub fn name(&self) -> Option<&str> {
+        match self.as_ref() {
+            ClassRepresentation::None => None,
+            ClassRepresentation::ClassId(_) => None,
+            ClassRepresentation::ClassName(name) => Some(name),
+            ClassRepresentation::Both { name, .. } => Some(name),
+        }
+    }
+
+    pub fn id(&self) -> Option<&str> {
+        match self.as_ref() {
+            ClassRepresentation::None => None,
+            ClassRepresentation::ClassName(_) => None,
+            ClassRepresentation::ClassId(id) => Some(id),
+            ClassRepresentation::Both { id, .. } => Some(&id),
         }
     }
 }
